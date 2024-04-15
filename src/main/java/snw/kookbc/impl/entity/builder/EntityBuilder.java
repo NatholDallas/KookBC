@@ -103,10 +103,11 @@ public class EntityBuilder {
                 String topic = get(object, "topic").getAsString();
                 return new TextChannelImpl(client, id, masterId, guildId, isPermSync, parent, name, rpo, upo, level, chatLimitTime, topic);
             } else if (type == 2) { // VoiceChannel
+                int chatLimitTime = get(object, "slow_mode").getAsInt();
                 boolean hasPassword = object.has("has_password") && get(object, "has_password").getAsBoolean();
                 int size = get(object, "limit_amount").getAsInt();
                 int quality = get(object, "voice_quality").getAsInt();
-                return new VoiceChannelImpl(client, id, masterId, guildId, isPermSync, parent, name, rpo, upo, level, hasPassword, size, quality);
+                return new VoiceChannelImpl(client, id, masterId, guildId, isPermSync, parent, name, rpo, upo, level, hasPassword, size, quality, chatLimitTime);
             }
         }
         throw new IllegalArgumentException("We can't construct the Channel using given information. Is your information correct?");
