@@ -23,10 +23,14 @@ import org.jetbrains.annotations.Nullable;
 import snw.jkook.entity.channel.Category;
 import snw.jkook.entity.channel.TextChannel;
 import snw.jkook.message.TextChannelMessage;
+import snw.jkook.message.component.BaseComponent;
+import snw.jkook.message.component.MarkdownComponent;
 import snw.jkook.util.PageIterator;
 import snw.jkook.util.Validate;
 import snw.kookbc.impl.KBCClient;
+import snw.kookbc.impl.entity.builder.MessageBuilder;
 import snw.kookbc.impl.network.HttpAPIRoute;
+import snw.kookbc.impl.network.exceptions.BadResponseException;
 import snw.kookbc.impl.pageiter.TextChannelMessageIterator;
 import snw.kookbc.util.MapBuilder;
 
