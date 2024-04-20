@@ -34,7 +34,13 @@ public class ReactionImpl implements Reaction {
     private final User sender;
     private final long timeStamp;
 
-    public ReactionImpl(KBCClient client, String messageId, CustomEmoji emoji, User sender, long timeStamp) {
+    public ReactionImpl(
+            KBCClient client,
+            String messageId,
+            CustomEmoji emoji,
+            User sender,
+            long timeStamp
+    ) {
         this.client = client;
         this.messageId = messageId;
         this.emoji = emoji;
