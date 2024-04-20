@@ -20,19 +20,13 @@ package snw.kookbc.impl.entity.channel;
 
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Nullable;
-import snw.jkook.entity.Guild;
-import snw.jkook.entity.User;
 import snw.jkook.entity.channel.Category;
 import snw.jkook.entity.channel.TextChannel;
 import snw.jkook.message.TextChannelMessage;
-import snw.jkook.message.component.BaseComponent;
-import snw.jkook.message.component.MarkdownComponent;
 import snw.jkook.util.PageIterator;
 import snw.jkook.util.Validate;
 import snw.kookbc.impl.KBCClient;
-import snw.kookbc.impl.entity.builder.MessageBuilder;
 import snw.kookbc.impl.network.HttpAPIRoute;
-import snw.kookbc.impl.network.exceptions.BadResponseException;
 import snw.kookbc.impl.pageiter.TextChannelMessageIterator;
 import snw.kookbc.util.MapBuilder;
 
@@ -57,10 +51,10 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
             Collection<RolePermissionOverwrite> rpo,
             Collection<UserPermissionOverwrite> upo,
             int level,
-            int chatLimitTime, 
+            int chatLimitTime,
             String topic
     ) {
-        super(client, id, masterId, guildId, permSync, parent, name, rpo, upo, level);
+        super(client, id, masterId, guildId, permSync, parent, name, rpo, upo, level, chatLimitTime);
         this.chatLimitTime = chatLimitTime;
         this.topic = topic;
     }
