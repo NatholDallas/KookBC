@@ -32,7 +32,14 @@ public class InvitationImpl implements Invitation {
     private final String url;
     private final User master;
 
-    public InvitationImpl(KBCClient client, Guild guild, Channel channel, String urlCode, String url, User master) {
+    public InvitationImpl(
+            KBCClient client,
+            Guild guild,
+            Channel channel,
+            String urlCode,
+            String url,
+            User master
+    ) {
         this.client = client;
         this.guild = guild;
         this.channel = channel;
