@@ -33,7 +33,6 @@ import snw.kookbc.impl.entity.RoleImpl;
 import snw.kookbc.impl.entity.UserImpl;
 import snw.kookbc.impl.entity.channel.ChannelImpl;
 import snw.kookbc.impl.network.HttpAPIRoute;
-import snw.kookbc.impl.network.exceptions.BadResponseException;
 
 import java.util.concurrent.TimeUnit;
 
@@ -59,32 +58,14 @@ public class EntityStorage {
 
     public EntityStorage(KBCClient client) {
         this.client = client;
-        this.users = newCaffeineBuilderWithWeakRef()
-                .build(withRetry(id ->
-                        client.getEntityBuilder().buildUser(
-                                client.getNetworkClient().get(
-                                        String.format("%s?user_id=%s", HttpAPIRoute.USER_WHO.toFullURL(), id)
-                                )
-                        )
-                ));
-        this.guilds = newCaffeineBuilderWithWeakRef()
-                .build(withRetry(id -> {
-                    try {
-                        return client.getEntityBuilder().buildGuild(
-                                client.getNetworkClient().get(String.format("%s?guild_id=%s", HttpAPIRoute.GUILD_INFO.toFullURL(), id))
-                        );
-                    } catch (BadResponseException e) {
-                        if (!(e.getCode() == 403)) throw e; // 403 maybe happened?
-                    }
-                    return null;
-                }));
+        this.users = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new UserImpl(client, id)));
+        this.guilds = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new GuildImpl(client, id)));
         this.channels = newCaffeineBuilderWithWeakRef().build(); // key: channel ID
         this.msgs = newCaffeineBuilderWithSoftRef().build(); // key: msg id
         this.roles = newCaffeineBuilderWithSoftRef().build(); // key format: GUILD_ID#ROLE_ID
         this.emojis = newCaffeineBuilderWithSoftRef().build(); // key: emoji ID
         this.reactions = newCaffeineBuilderWithSoftRef().build(); // key format: MSG_ID#EMOJI_ID#SENDER_ID
         this.games = newCaffeineBuilderWithSoftRef().build(); // key: game id
-
         this.channelLoader = funcWithRetry(id ->
                 client.getEntityBuilder().buildChannel(
                         client.getNetworkClient().get(
@@ -139,7 +120,7 @@ public class EntityStorage {
         // use getIfPresent, because the def should not be wasted
         User result = users.getIfPresent(id);
         if (result == null) {
-            result = client.getEntityBuilder().buildUser(def);
+            result = new UserImpl(client, id);
             addUser(result);
         } else {
             ((UserImpl) result).update(def);

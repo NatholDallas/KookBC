@@ -219,8 +219,7 @@ public class KBCClient {
         }
 
         core.getLogger().debug("Fetching Bot user object");
-        User botUser = getEntityBuilder().buildUser(
-                getNetworkClient().get(HttpAPIRoute.USER_ME.toFullURL()));
+        User botUser = getEntityBuilder().buildUser(getNetworkClient().get(HttpAPIRoute.USER_ME.toFullURL()));
         getStorage().addUser(botUser);
         core.setUser(botUser);
         registerInternal();

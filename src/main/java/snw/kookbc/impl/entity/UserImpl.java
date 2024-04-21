@@ -36,6 +36,7 @@ import snw.kookbc.impl.KBCClient;
 import snw.kookbc.impl.entity.builder.MessageBuilder;
 import snw.kookbc.impl.network.HttpAPIRoute;
 import snw.kookbc.impl.pageiter.UserJoinedVoiceChannelIterator;
+import snw.kookbc.interfaces.Lazy;
 import snw.kookbc.interfaces.Updatable;
 import snw.kookbc.util.MapBuilder;
 
@@ -43,10 +44,12 @@ import java.util.*;
 
 import static snw.kookbc.util.GsonUtil.get;
 
-public class UserImpl implements User, Updatable {
+public class UserImpl implements User, Updatable, Lazy {
     private final KBCClient client;
     private final String id;
-    private final boolean bot;
+
+    /* basic info */
+    private boolean bot;
     private String name;
     private int identify;
     private boolean ban;
@@ -54,35 +57,36 @@ public class UserImpl implements User, Updatable {
     private String avatarUrl;
     private String vipAvatarUrl;
 
-    public UserImpl(
-            KBCClient client, String id,
-            boolean bot,
-            String name,
-            String avatarUrl,
-            String vipAvatarUrl,
-            int identify,
-            boolean ban,
-            boolean vip
-    ) {
+    /* completed flag */
+    private boolean completed;
+
+    public UserImpl(KBCClient client, String id) {
+        this.client = client;
+        this.id = id;
+    }
+
+    public UserImpl(KBCClient client, String id, boolean bot, String name, int identify, boolean ban, boolean vip, String avatarUrl, String vipAvatarUrl) {
         this.client = client;
         this.id = id;
         this.bot = bot;
         this.name = name;
-        this.avatarUrl = avatarUrl;
-        this.vipAvatarUrl = vipAvatarUrl;
         this.identify = identify;
         this.ban = ban;
         this.vip = vip;
+        this.avatarUrl = avatarUrl;
+        this.vipAvatarUrl = vipAvatarUrl;
+        this.completed = true;
     }
-
 
     @Override
     public String getId() {
+        if (!completed) init();
         return id;
     }
 
     @Override
     public String getNickName(Guild guild) {
+        if (!completed) init();
         return client.getNetworkClient()
                 .get(String.format("%s?user_id=%s&guild_id=%s",
                         HttpAPIRoute.USER_WHO.toFullURL(),
@@ -94,11 +98,13 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public String getFullName(@Nullable Guild guild) {
+        if (!completed) init();
         return (guild != null ? getNickName(guild) : getName()) + "#" + getIdentifyNumber();
     }
 
     @Override
     public void setNickName(Guild guild, String s) {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("guild_id", guild.getId())
                 .put("nickname", (s != null ? s : ""))
@@ -109,35 +115,42 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public int getIdentifyNumber() {
+        if (!completed) init();
         return identify;
     }
 
     @Override
     public boolean isVip() {
+        if (!completed) init();
         return vip;
     }
 
     public void setVip(boolean vip) {
+        if (!completed) init();
         this.vip = vip;
     }
 
     @Override
     public boolean isBot() {
+        if (!completed) init();
         return bot;
     }
 
     @Override
     public boolean isOnline() {
+        if (!completed) init();
         return client.getNetworkClient().get(String.format("%s?user_id=%s", HttpAPIRoute.USER_WHO.toFullURL(), id)).get("online").getAsBoolean();
     }
 
     @Override
     public boolean isBanned() {
+        if (!completed) init();
         return ban;
     }
 
     @Override
     public Collection<Integer> getRoles(Guild guild) {
+        if (!completed) init();
         JsonArray array = client.getNetworkClient()
                 .get(String.format("%s?user_id=%s&guild_id=%s",
                         HttpAPIRoute.USER_WHO.toFullURL(),
@@ -153,21 +166,25 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public String sendPrivateMessage(String s) {
+        if (!completed) init();
         return sendPrivateMessage(new MarkdownComponent(s));
     }
 
     @Override
     public String sendPrivateMessage(String s, PrivateMessage privateMessage) {
+        if (!completed) init();
         return sendPrivateMessage(new MarkdownComponent(s), privateMessage);
     }
 
     @Override
     public String sendPrivateMessage(BaseComponent baseComponent) {
+        if (!completed) init();
         return sendPrivateMessage(baseComponent, null);
     }
 
     @Override
     public String sendPrivateMessage(BaseComponent component, PrivateMessage quote) {
+        if (!completed) init();
         Object[] serialize = MessageBuilder.serialize(component);
         int type = (int) serialize[0];
         String json = (String) serialize[1];
@@ -182,16 +199,19 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public PageIterator<Collection<VoiceChannel>> getJoinedVoiceChannel(Guild guild) {
+        if (!completed) init();
         return new UserJoinedVoiceChannelIterator(client, this, guild);
     }
 
     @Override
     public int getIntimacy() {
+        if (!completed) init();
         return client.getNetworkClient().get(String.format("%s?user_id=%s", HttpAPIRoute.INTIMACY_INFO.toFullURL(), getId())).get("score").getAsInt();
     }
 
     @Override
     public IntimacyInfo getIntimacyInfo() {
+        if (!completed) init();
         JsonObject object = client.getNetworkClient().get(String.format("%s?user_id=%s", HttpAPIRoute.INTIMACY_INFO.toFullURL(), getId()));
         String socialImage = get(object, "img_url").getAsString();
         String socialInfo = get(object, "social_info").getAsString();
@@ -212,6 +232,7 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public void setIntimacy(int i) {
+        if (!completed) init();
         if (!((i > 0) && (i < 2200)))
             throw new IllegalArgumentException("Invalid score. 0--2200 is allowed.");
         Map<String, Object> body = new MapBuilder()
@@ -223,6 +244,7 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public void setIntimacy(int i, String s, @Nullable Integer imageId) {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("user_id", getId())
                 .put("score", i)
@@ -234,6 +256,7 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public void grantRole(Role role) {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("guild_id", role.getGuild().getId())
                 .put("user_id", getId())
@@ -244,6 +267,7 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public void revokeRole(Role role) {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("guild_id", role.getGuild().getId())
                 .put("user_id", getId())
@@ -254,6 +278,7 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public void grantRole(Guild guild, int roleId) {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("guild_id", guild.getId())
                 .put("user_id", getId())
@@ -264,6 +289,7 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public void revokeRole(Guild guild, int roleId) {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("guild_id", guild.getId())
                 .put("user_id", getId())
@@ -274,6 +300,7 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public void block() {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("user_id", getId())
                 .build();
@@ -282,6 +309,7 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public void unblock() {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("user_id", getId())
                 .build();
@@ -290,36 +318,44 @@ public class UserImpl implements User, Updatable {
 
     @Override
     public @Nullable String getAvatarUrl(boolean b) {
+        if (!completed) init();
         return b ? vipAvatarUrl : avatarUrl;
     }
 
     @Override
     public String getName() {
+        if (!completed) init();
         return name;
     }
 
     public void setName(String name) {
+        if (!completed) init();
         this.name = name;
     }
 
     public void setIdentify(int identify) {
+        if (!completed) init();
         this.identify = identify;
     }
 
     public void setBan(boolean ban) {
+        if (!completed) init();
         this.ban = ban;
     }
 
     public void setAvatarUrl(String avatarUrl) {
+        if (!completed) init();
         this.avatarUrl = avatarUrl;
     }
 
     public void setVipAvatarUrl(String vipAvatarUrl) {
+        if (!completed) init();
         this.vipAvatarUrl = vipAvatarUrl;
     }
 
     @Override
     public void update(JsonObject data) {
+        if (!completed) init();
         Validate.isTrue(Objects.equals(getId(), get(data, "id").getAsString()), "You can't update user by using different data");
         synchronized (this) {
             name = get(data, "username").getAsString();
@@ -329,6 +365,23 @@ public class UserImpl implements User, Updatable {
             ban = get(data, "status").getAsInt() == 10;
             vip = get(data, "is_vip").getAsBoolean();
         }
+    }
+
+    @Override
+    public void init() {
+        final UserImpl user = client.getEntityBuilder().buildUser(
+                client.getNetworkClient().get(
+                        String.format("%s?user_id=%s", HttpAPIRoute.USER_WHO.toFullURL(), id)
+                )
+        );
+        bot = user.bot;
+        name = user.name;
+        identify = user.identify;
+        ban = user.ban;
+        vip = user.vip;
+        avatarUrl = user.avatarUrl;
+        vipAvatarUrl = user.vipAvatarUrl;
+        completed = true;
     }
 }
 

@@ -19,13 +19,17 @@
 package snw.kookbc.impl.entity.builder;
 
 import com.google.gson.JsonObject;
-import snw.jkook.entity.*;
+import snw.jkook.entity.CustomEmoji;
+import snw.jkook.entity.Game;
+import snw.jkook.entity.Guild;
+import snw.jkook.entity.Role;
 import snw.jkook.entity.channel.Category;
 import snw.jkook.entity.channel.Channel;
 import snw.jkook.util.Validate;
 import snw.kookbc.impl.KBCClient;
 import snw.kookbc.impl.entity.*;
 import snw.kookbc.impl.entity.channel.CategoryImpl;
+import snw.kookbc.impl.entity.channel.ChannelImpl;
 import snw.kookbc.impl.entity.channel.TextChannelImpl;
 import snw.kookbc.impl.entity.channel.VoiceChannelImpl;
 import snw.kookbc.impl.network.exceptions.BadResponseException;
@@ -44,35 +48,26 @@ public class EntityBuilder {
         this.client = client;
     }
 
-    public User buildUser(JsonObject object) {
+    public UserImpl buildUser(JsonObject object) {
         String id = get(object, "id").getAsString();
         boolean bot = get(object, "bot").getAsBoolean();
         String userName = get(object, "username").getAsString();
-        String avatar = get(object, "avatar").getAsString();
-        String vipAvatar = get(object, "vip_avatar").getAsString();
         int identify = get(object, "identify_num").getAsInt();
         boolean ban = get(object, "status").getAsInt() == 10;
         boolean vip = get(object, "is_vip").getAsBoolean();
-        return new UserImpl(
-                client,
-                id,
-                bot,
-                userName,
-                avatar,
-                vipAvatar,
-                identify,
-                ban,
-                vip
-        );
+        String avatar = get(object, "avatar").getAsString();
+        String vipAvatar = get(object, "vip_avatar").getAsString();
+        return new UserImpl(client, id, bot, userName, identify, ban, vip, avatar, vipAvatar);
     }
 
-    public Guild buildGuild(JsonObject object) {
+    public GuildImpl buildGuild(JsonObject object) {
         String id = get(object, "id").getAsString();
         String name = get(object, "name").getAsString();
         boolean isPublic = get(object, "enable_open").getAsBoolean();
         String region = get(object, "region").getAsString();
         String masterId = get(object, "master_id").getAsString();
         int rawNotifyType = get(object, "notify_type").getAsInt();
+        String avatar = get(object, "icon").getAsString();
 
         Guild.NotifyType type = null;
         for (Guild.NotifyType value : Guild.NotifyType.values()) {
@@ -83,43 +78,21 @@ public class EntityBuilder {
         }
         Validate.notNull(type, String.format("Internal Error: Unexpected NotifyType from remote: %s", rawNotifyType));
 
-        String avatar = get(object, "icon").getAsString();
-        return new GuildImpl(
-                client,
-                id,
-                name,
-                isPublic,
-                region,
-                masterId,
-                type,
-                avatar
-        );
+        return new GuildImpl(client, id, name, isPublic, region, masterId, type, avatar);
     }
 
-    public Channel buildChannel(JsonObject object) {
-        // basic information
+    public ChannelImpl buildChannel(JsonObject object) {
         String id = get(object, "id").getAsString();
         String name = get(object, "name").getAsString();
         String masterId = get(object, "user_id").getAsString(); // TODO 语意混淆, 可能需要改进
         String guildId = get(object, "guild_id").getAsString();
-
         boolean isPermSync = get(object, "permission_sync").getAsInt() != 0;
         int level = get(object, "level").getAsInt();
-
-        // rpo parse
         Collection<Channel.RolePermissionOverwrite> rpo = parseRPO(object);
-
-        // upo parse
         Collection<Channel.UserPermissionOverwrite> upo = parseUPO(client, object);
 
         if (get(object, "is_category").getAsBoolean()) {
-            return new CategoryImpl(
-                    client, id,
-                    masterId,
-                    guildId,
-                    isPermSync,
-                    rpo, upo, level, name
-            );
+            return new CategoryImpl(client, id, masterId, guildId, isPermSync, rpo, upo, level, name);
         } else {
             String parentId = get(object, "parent_id").getAsString();
             Category parent = ("".equals(parentId) || "0".equals(parentId)) ? null : (Category) client.getStorage().getChannel(parentId);
@@ -128,39 +101,12 @@ public class EntityBuilder {
             if (type == 1) { // TextChannel
                 int chatLimitTime = get(object, "slow_mode").getAsInt();
                 String topic = get(object, "topic").getAsString();
-                return new TextChannelImpl(
-                        client,
-                        id,
-                        masterId,
-                        guildId,
-                        isPermSync,
-                        parent,
-                        name,
-                        rpo,
-                        upo,
-                        level,
-                        chatLimitTime,
-                        topic
-                );
+                return new TextChannelImpl(client, id, masterId, guildId, isPermSync, parent, name, rpo, upo, level, chatLimitTime, topic);
             } else if (type == 2) { // VoiceChannel
                 boolean hasPassword = object.has("has_password") && get(object, "has_password").getAsBoolean();
                 int size = get(object, "limit_amount").getAsInt();
                 int quality = get(object, "voice_quality").getAsInt();
-                return new VoiceChannelImpl(
-                        client,
-                        id,
-                        masterId,
-                        guildId,
-                        isPermSync,
-                        parent,
-                        name,
-                        rpo,
-                        upo,
-                        level,
-                        hasPassword,
-                        size,
-                        quality
-                );
+                return new VoiceChannelImpl(client, id, masterId, guildId, isPermSync, parent, name, rpo, upo, level, hasPassword, size, quality);
             }
         }
         throw new IllegalArgumentException("We can't construct the Channel using given information. Is your information correct?");

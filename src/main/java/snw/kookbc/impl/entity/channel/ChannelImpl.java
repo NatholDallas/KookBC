@@ -29,6 +29,7 @@ import snw.jkook.entity.channel.Channel;
 import snw.jkook.util.Validate;
 import snw.kookbc.impl.KBCClient;
 import snw.kookbc.impl.network.HttpAPIRoute;
+import snw.kookbc.interfaces.Lazy;
 import snw.kookbc.interfaces.Updatable;
 import snw.kookbc.util.MapBuilder;
 
@@ -37,32 +38,30 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static snw.kookbc.util.GsonUtil.get;
 
-public abstract class ChannelImpl implements Channel, Updatable {
+public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     protected final KBCClient client;
     private final String id;
-    private final String masterId;
-    private final String guildId;
+
+    /* basic info */
+    private String masterId;
+    private final AtomicReference<User> master = new AtomicReference<>();
+    private String guildId;
+    private final AtomicReference<Guild> guild = new AtomicReference<>();
     private Collection<RolePermissionOverwrite> rpo;
     private Collection<UserPermissionOverwrite> upo;
     private boolean permSync;
     private String name;
     private int level;
 
-    /* Lazy Load */
-    private final AtomicReference<User> master = new AtomicReference<>();
-    private final AtomicReference<Guild> guild = new AtomicReference<>();
+    /* completed flag */
+    private boolean completed;
 
-    public ChannelImpl(
-            KBCClient client,
-            String id,
-            String masterId,
-            String guildId,
-            boolean permSync,
-            String name,
-            Collection<RolePermissionOverwrite> rpo,
-            Collection<UserPermissionOverwrite> upo,
-            int level
-    ) {
+    public ChannelImpl(KBCClient client, String id) {
+        this.client = client;
+        this.id = id;
+    }
+
+    public ChannelImpl(KBCClient client, String id, String masterId, String guildId, boolean permSync, String name, Collection<RolePermissionOverwrite> rpo, Collection<UserPermissionOverwrite> upo, int level) {
         this.client = client;
         this.id = id;
         this.masterId = masterId;
@@ -72,15 +71,18 @@ public abstract class ChannelImpl implements Channel, Updatable {
         this.rpo = rpo;
         this.upo = upo;
         this.level = level;
+        this.completed = true;
     }
 
     @Override
     public String getId() {
+        if (!completed) init();
         return id;
     }
 
     @Override
     public Guild getGuild() {
+        if (!completed) init();
         return this.guild.updateAndGet(obj -> {
             if (obj == null || !guildId.equals(obj.getId())) {
                 return client.getStorage().getGuild(guildId);
@@ -91,67 +93,59 @@ public abstract class ChannelImpl implements Channel, Updatable {
 
     @Override
     public boolean isPermissionSync() {
+        if (!completed) init();
         return permSync;
     }
 
     public void setPermissionSync(boolean permSync) {
+        if (!completed) init();
         this.permSync = permSync;
     }
 
 
     @Override
     public void delete() {
-        client.getNetworkClient().post(HttpAPIRoute.CHANNEL_DELETE.toFullURL(),
-                Collections.singletonMap("channel_id", getId())
-        );
+        if (!completed) init();
+        client.getNetworkClient().post(HttpAPIRoute.CHANNEL_DELETE.toFullURL(), Collections.singletonMap("channel_id", getId()));
     }
 
     @Override
     public int getLevel() {
+        if (!completed) init();
         return level;
     }
 
     @Override
     public void setLevel(int level) {
-        Map<String, Object> body = new MapBuilder()
-                .put("channel_id", getId())
-                .put("level", level)
-                .build();
+        if (!completed) init();
+        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("level", level).build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_UPDATE.toFullURL(), body);
         this.level = level;
     }
 
     @Override
     public void updatePermission(Role role, int rawAllow, int rawDeny) {
+        if (!completed) init();
         updatePermission(role.getId(), rawAllow, rawDeny);
     }
 
     @Override
     public void updatePermission(int role, int rawAllow, int rawDeny) {
-        Map<String, Object> body = new MapBuilder()
-                .put("channel_id", getId())
-                .put("type", "role_id")
-                .put("value", String.valueOf(role))
-                .put("allow", rawAllow)
-                .put("deny", rawDeny)
-                .build();
+        if (!completed) init();
+        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("type", "role_id").put("value", String.valueOf(role)).put("allow", rawAllow).put("deny", rawDeny).build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_ROLE_UPDATE.toFullURL(), body);
     }
 
     @Override
     public void updatePermission(User user, int rawAllow, int rawDeny) {
-        Map<String, Object> body = new MapBuilder()
-                .put("channel_id", getId())
-                .put("type", "user_id")
-                .put("value", user.getId())
-                .put("allow", rawAllow)
-                .put("deny", rawDeny)
-                .build();
+        if (!completed) init();
+        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("type", "user_id").put("value", user.getId()).put("allow", rawAllow).put("deny", rawDeny).build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_ROLE_UPDATE.toFullURL(), body);
     }
 
     @Override
     public void addPermission(User user, Permission... perms) {
+        if (!completed) init();
         if (perms.length == 0) {
             return;
         }
@@ -168,6 +162,7 @@ public abstract class ChannelImpl implements Channel, Updatable {
 
     @Override
     public void removePermission(User user, Permission... perms) {
+        if (!completed) init();
         if (perms.length == 0) {
             return;
         }
@@ -184,16 +179,19 @@ public abstract class ChannelImpl implements Channel, Updatable {
 
     @Override
     public void addPermission(Role role, Permission... perms) {
+        if (!completed) init();
         addPermission(role.getId(), perms);
     }
 
     @Override
     public void removePermission(Role role, Permission... perms) {
+        if (!completed) init();
         removePermission(role.getId(), perms);
     }
 
     @Override
     public void addPermission(int roleId, Permission... perms) {
+        if (!completed) init();
         if (perms.length == 0) {
             return;
         }
@@ -210,6 +208,7 @@ public abstract class ChannelImpl implements Channel, Updatable {
 
     @Override
     public void removePermission(int roleId, Permission... perms) {
+        if (!completed) init();
         if (perms.length == 0) {
             return;
         }
@@ -226,6 +225,7 @@ public abstract class ChannelImpl implements Channel, Updatable {
 
     @Nullable
     public UserPermissionOverwrite getUserPermissionOverwriteByUser(User user) {
+        if (!completed) init();
         for (UserPermissionOverwrite o : getOverwrittenUserPermissions()) {
             if (o.getUser() == user) {
                 return o;
@@ -236,6 +236,7 @@ public abstract class ChannelImpl implements Channel, Updatable {
 
     @Nullable
     public RolePermissionOverwrite getRolePermissionOverwriteByRole(Role role) {
+        if (!completed) init();
         for (RolePermissionOverwrite o : getOverwrittenRolePermissions()) {
             if (o.getRoleId() == role.getId()) {
                 return o;
@@ -247,6 +248,7 @@ public abstract class ChannelImpl implements Channel, Updatable {
     @Override
     @Nullable
     public RolePermissionOverwrite getRolePermissionOverwriteByRole(int roleId) {
+        if (!completed) init();
         for (RolePermissionOverwrite o : getOverwrittenRolePermissions()) {
             if (o.getRoleId() == roleId) {
                 return o;
@@ -257,67 +259,67 @@ public abstract class ChannelImpl implements Channel, Updatable {
 
     @Override
     public void deletePermission(Role role) {
-        Map<String, Object> body = new MapBuilder()
-                .put("channel_id", getId())
-                .put("type", "role_id")
-                .put("value", String.valueOf(role.getId()))
-                .build();
+        if (!completed) init();
+        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("type", "role_id").put("value", String.valueOf(role.getId())).build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_ROLE_DELETE.toFullURL(), body);
     }
 
     @Override
     public void deletePermission(User user) {
-        Map<String, Object> body = new MapBuilder()
-                .put("channel_id", getId())
-                .put("type", "user_id")
-                .put("value", String.valueOf(user.getId()))
-                .build();
+        if (!completed) init();
+        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("type", "user_id").put("value", String.valueOf(user.getId())).build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_ROLE_DELETE.toFullURL(), body);
     }
 
     @Override
     public String getName() {
+        if (!completed) init();
         return name;
     }
 
     @Override
     public void setName(String name) {
-        Map<String, Object> body = new MapBuilder()
-                .put("channel_id", getId())
-                .put("name", name)
-                .build();
+        if (!completed) init();
+        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("name", name).build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_UPDATE.toFullURL(), body);
         setName0(name);
     }
 
     public void setName0(String name) {
+        if (!completed) init();
         this.name = name;
     }
 
     @Override
     public Collection<RolePermissionOverwrite> getOverwrittenRolePermissions() {
+        if (!completed) init();
         return Collections.unmodifiableCollection(rpo);
     }
 
     public void setOverwrittenRolePermissions(Collection<RolePermissionOverwrite> rpo) {
+        if (!completed) init();
         this.rpo = rpo;
     }
 
     @Override
     public Collection<UserPermissionOverwrite> getOverwrittenUserPermissions() {
+        if (!completed) init();
         return Collections.unmodifiableCollection(upo);
     }
 
     public Collection<UserPermissionOverwrite> getOverwrittenUserPermissions0() {
+        if (!completed) init();
         return upo;
     }
 
     public void setOverwrittenUserPermissions(Collection<UserPermissionOverwrite> upo) {
+        if (!completed) init();
         this.upo = upo;
     }
 
     @Override
     public User getMaster() {
+        if (!completed) init();
         return master.updateAndGet(obj -> {
             if (obj == null || !masterId.equals(obj.getId())) {
                 return client.getStorage().getUser(masterId);
@@ -328,6 +330,7 @@ public abstract class ChannelImpl implements Channel, Updatable {
 
     @Override
     public void update(JsonObject data) {
+        if (!completed) init();
         Validate.isTrue(Objects.equals(getId(), get(data, "id").getAsString()), "You can't update channel by using different data");
         synchronized (this) {
             // basic information
@@ -337,13 +340,7 @@ public abstract class ChannelImpl implements Channel, Updatable {
             Collection<RolePermissionOverwrite> rpo = new ArrayList<>();
             for (JsonElement element : get(data, "permission_overwrites").getAsJsonArray()) {
                 JsonObject orpo = element.getAsJsonObject();
-                rpo.add(
-                        new RolePermissionOverwrite(
-                                orpo.get("role_id").getAsInt(),
-                                orpo.get("allow").getAsInt(),
-                                orpo.get("deny").getAsInt()
-                        )
-                );
+                rpo.add(new RolePermissionOverwrite(orpo.get("role_id").getAsInt(), orpo.get("allow").getAsInt(), orpo.get("deny").getAsInt()));
             }
 
             // upo parse
@@ -351,13 +348,7 @@ public abstract class ChannelImpl implements Channel, Updatable {
             for (JsonElement element : get(data, "permission_users").getAsJsonArray()) {
                 JsonObject oupo = element.getAsJsonObject();
                 JsonObject rawUser = oupo.getAsJsonObject("user");
-                upo.add(
-                        new UserPermissionOverwrite(
-                                client.getStorage().getUser(rawUser.get("id").getAsString(), rawUser),
-                                oupo.get("allow").getAsInt(),
-                                oupo.get("deny").getAsInt()
-                        )
-                );
+                upo.add(new UserPermissionOverwrite(client.getStorage().getUser(rawUser.get("id").getAsString(), rawUser), oupo.get("allow").getAsInt(), oupo.get("deny").getAsInt()));
             }
 
             this.name = name;
@@ -365,5 +356,22 @@ public abstract class ChannelImpl implements Channel, Updatable {
             this.rpo = rpo;
             this.upo = upo;
         }
+    }
+
+    @Override
+    public void init() {
+        final ChannelImpl channel = client.getEntityBuilder().buildChannel(
+                client.getNetworkClient().get(
+                        String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id)
+                )
+        );
+        masterId = channel.masterId;
+        guildId = channel.guildId;
+        rpo = channel.rpo;
+        upo = channel.upo;
+        permSync = channel.permSync;
+        name = channel.name;
+        level = channel.level;
+        completed = true;
     }
 }
