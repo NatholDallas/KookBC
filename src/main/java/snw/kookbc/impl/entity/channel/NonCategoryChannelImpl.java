@@ -21,6 +21,7 @@ package snw.kookbc.impl.entity.channel;
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Nullable;
 import snw.jkook.entity.Invitation;
+import snw.jkook.entity.User;
 import snw.jkook.entity.channel.Category;
 import snw.jkook.entity.channel.NonCategoryChannel;
 import snw.jkook.message.ChannelMessage;
