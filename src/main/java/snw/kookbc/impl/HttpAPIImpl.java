@@ -40,6 +40,8 @@ import snw.jkook.message.component.BaseComponent;
 import snw.jkook.util.PageIterator;
 import snw.jkook.util.Validate;
 import snw.kookbc.impl.entity.channel.CategoryImpl;
+import snw.kookbc.impl.entity.channel.NonCategoryChannelImpl;
+import snw.kookbc.impl.entity.channel.TextChannelImpl;
 import snw.kookbc.impl.message.ChannelMessageImpl;
 import snw.kookbc.impl.message.PrivateMessageImpl;
 import snw.kookbc.impl.message.TextChannelMessageImpl;
@@ -251,7 +253,7 @@ public class HttpAPIImpl implements HttpAPI {
             final String quoteId = get(rawQuote, "id").getAsString();
             quote = getTextChannelMessage(quoteId);
         }
-        final TextChannel channel = (TextChannel) getChannel(get(object, "channel_id").getAsString());
+        final TextChannel channel = new TextChannelImpl(client, get(object, "channel_id").getAsString());
         return new TextChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
     }
 
@@ -279,7 +281,7 @@ public class HttpAPIImpl implements HttpAPI {
             final String quoteId = get(rawQuote, "id").getAsString();
             quote = getChannelMessage(quoteId);
         }
-        final NonCategoryChannel channel = (NonCategoryChannel) getChannel(get(object, "channel_id").getAsString());
+        final NonCategoryChannel channel = new NonCategoryChannelImpl(client, get(object, "channel_id").getAsString());
         return new ChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
     }
 
