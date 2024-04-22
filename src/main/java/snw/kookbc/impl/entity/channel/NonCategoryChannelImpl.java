@@ -175,7 +175,7 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
     @Override
     public void init() {
         super.init();
-        final NonCategoryChannelImpl channel = (NonCategoryChannelImpl) super.channel;
+        final NonCategoryChannelImpl channel = (NonCategoryChannelImpl) client.getEntityBuilder().buildChannel(super.jsonObject);
         this.parent = channel.parent;
     }
 }

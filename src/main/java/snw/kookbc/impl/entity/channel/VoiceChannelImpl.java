@@ -154,7 +154,7 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     @Override
     public void init() {
         super.init();
-        final VoiceChannelImpl voiceChannel = (VoiceChannelImpl) super.channel;
+        final VoiceChannelImpl voiceChannel = (VoiceChannelImpl) client.getEntityBuilder().buildChannel(super.jsonObject);
         this.passwordProtected = voiceChannel.passwordProtected;
         this.maxSize = voiceChannel.maxSize;
         this.quality = voiceChannel.quality;

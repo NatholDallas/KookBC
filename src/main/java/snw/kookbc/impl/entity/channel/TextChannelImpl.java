@@ -100,4 +100,12 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
             this.topic = topic;
         }
     }
+
+    @Override
+    public void init() {
+        super.init();
+        final TextChannelImpl textChannel = (TextChannelImpl) client.getEntityBuilder().buildChannel(super.jsonObject);
+        this.chatLimitTime = textChannel.chatLimitTime;
+        this.topic = textChannel.topic;
+    }
 }
