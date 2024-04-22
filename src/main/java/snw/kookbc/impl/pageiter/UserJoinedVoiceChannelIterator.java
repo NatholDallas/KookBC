@@ -24,6 +24,7 @@ import snw.jkook.entity.Guild;
 import snw.jkook.entity.User;
 import snw.jkook.entity.channel.VoiceChannel;
 import snw.kookbc.impl.KBCClient;
+import snw.kookbc.impl.entity.channel.VoiceChannelImpl;
 import snw.kookbc.impl.network.HttpAPIRoute;
 
 import java.util.Collection;
@@ -48,7 +49,7 @@ public class UserJoinedVoiceChannelIterator extends PageIteratorImpl<Collection<
     protected void processElements(JsonArray array) {
         object = new HashSet<>();
         for (JsonElement element : array) {
-            object.add((VoiceChannel) client.getStorage().getChannel(element.getAsJsonObject().get("id").getAsString()));
+            object.add(new VoiceChannelImpl(client, element.getAsJsonObject().get("id").getAsString()));
         }
     }
 }

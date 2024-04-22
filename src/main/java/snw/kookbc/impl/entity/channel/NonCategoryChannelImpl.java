@@ -172,7 +172,7 @@ public class NonCategoryChannelImpl extends ChannelImpl implements NonCategoryCh
         if (!completed) init();
         super.update(data);
         String parentId = get(data, "parent_id").getAsString();
-        Category parent = ("".equals(parentId) || "0".equals(parentId)) ? null : (Category) client.getStorage().getChannel(parentId);
+        Category parent = ("".equals(parentId) || "0".equals(parentId)) ? null : new CategoryImpl(client, parentId);
         setParent0(parent);
     }
 

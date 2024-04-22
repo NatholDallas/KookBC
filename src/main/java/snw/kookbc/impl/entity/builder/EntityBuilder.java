@@ -95,7 +95,7 @@ public class EntityBuilder {
             return new CategoryImpl(client, id, masterId, guildId, isPermSync, rpo, upo, level, name);
         } else {
             String parentId = get(object, "parent_id").getAsString();
-            Category parent = ("".equals(parentId) || "0".equals(parentId)) ? null : (Category) client.getStorage().getChannel(parentId);
+            Category parent = ("".equals(parentId) || "0".equals(parentId)) ? null : new CategoryImpl(client, id);
 
             int type = get(object, "type").getAsInt();
             if (type == 1) { // TextChannel
