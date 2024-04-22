@@ -112,21 +112,25 @@ public class NonCategoryChannelImpl extends ChannelImpl implements NonCategoryCh
 
     @Override
     public String sendComponent(String message) {
+        if (!completed) init();
         return sendComponent(new MarkdownComponent(message));
     }
 
     @Override
     public String sendComponent(String message, @Nullable ChannelMessage quote, @Nullable User tempTarget) {
+        if (!completed) init();
         return sendComponent(new MarkdownComponent(message), quote, tempTarget);
     }
 
     @Override
     public String sendComponent(BaseComponent baseComponent) {
+        if (!completed) init();
         return sendComponent(baseComponent, null, null);
     }
 
     @Override
     public String sendComponent(BaseComponent component, @Nullable ChannelMessage quote, @Nullable User tempTarget) {
+        if (!completed) init();
         Object[] result = MessageBuilder.serialize(component);
         Map<String, Object> body = new MapBuilder()
                 .put("target_id", getId())
@@ -150,11 +154,13 @@ public class NonCategoryChannelImpl extends ChannelImpl implements NonCategoryCh
 
     @Override
     public int getChatLimitTime() {
+        if (!completed) init();
         return chatLimitTime;
     }
 
     @Override
     public void setChatLimitTime(int chatLimitTime) {
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("channel_id", getId())
                 .put("slow_mode", chatLimitTime)
@@ -164,6 +170,7 @@ public class NonCategoryChannelImpl extends ChannelImpl implements NonCategoryCh
     }
 
     public void setChatLimitTime0(int chatLimitTime) {
+        if (!completed) init();
         this.chatLimitTime = chatLimitTime;
     }
 
