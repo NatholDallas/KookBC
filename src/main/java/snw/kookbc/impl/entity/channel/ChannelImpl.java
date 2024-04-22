@@ -403,7 +403,7 @@ public class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public void init() {
         final JsonObject jsonObject = client.getNetworkClient().get(String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id));
-        final ChannelImpl channel = client.getEntityBuilder().buildChannel(this.jsonObject);
+        final ChannelImpl channel = client.getEntityBuilder().buildChannel(jsonObject);
         this.masterId = channel.masterId;
         this.guildId = channel.guildId;
         this.rpo = channel.rpo;
