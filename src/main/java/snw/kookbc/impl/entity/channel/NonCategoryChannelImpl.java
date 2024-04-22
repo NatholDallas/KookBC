@@ -42,15 +42,15 @@ import java.util.Set;
 
 import static snw.kookbc.util.GsonUtil.get;
 
-public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonCategoryChannel {
+public class NonCategoryChannelImpl extends ChannelImpl implements NonCategoryChannel {
     private Category parent;
     private int chatLimitTime;
 
-    protected NonCategoryChannelImpl(KBCClient client, String id) {
+    public NonCategoryChannelImpl(KBCClient client, String id) {
         super(client, id);
     }
 
-    protected NonCategoryChannelImpl(
+    public NonCategoryChannelImpl(
             KBCClient client,
             String id,
             String masterId,

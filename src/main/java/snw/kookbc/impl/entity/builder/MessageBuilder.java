@@ -21,13 +21,9 @@ package snw.kookbc.impl.entity.builder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import snw.jkook.entity.User;
-import snw.jkook.entity.channel.Channel;
-import snw.jkook.entity.channel.NonCategoryChannel;
-import snw.jkook.entity.channel.TextChannel;
 import snw.jkook.message.ChannelMessage;
 import snw.jkook.message.Message;
 import snw.jkook.message.PrivateMessage;
-import snw.jkook.message.TextChannelMessage;
 import snw.jkook.message.component.BaseComponent;
 import snw.jkook.message.component.FileComponent;
 import snw.jkook.message.component.MarkdownComponent;
@@ -38,10 +34,10 @@ import snw.jkook.message.component.card.Size;
 import snw.jkook.message.component.card.Theme;
 import snw.jkook.message.component.card.module.FileModule;
 import snw.kookbc.impl.KBCClient;
+import snw.kookbc.impl.entity.channel.NonCategoryChannelImpl;
 import snw.kookbc.impl.message.ChannelMessageImpl;
 import snw.kookbc.impl.message.PrivateMessageImpl;
 import snw.kookbc.impl.message.QuoteImpl;
-import snw.kookbc.impl.message.TextChannelMessageImpl;
 
 import java.util.NoSuchElementException;
 
@@ -124,7 +120,6 @@ public class MessageBuilder {
         final JsonObject extra = get(object, "extra").getAsJsonObject();
         JsonObject authorObj = get(extra, "author").getAsJsonObject();
         User author = client.getStorage().getUser(get(authorObj, "id").getAsString(), authorObj);
-        Channel channel = client.getStorage().getChannel(get(object, "target_id").getAsString());
         long timeStamp = get(object, "msg_timestamp").getAsLong();
         final JsonObject quote;
         JsonObject quote1;
@@ -135,7 +130,7 @@ public class MessageBuilder {
         }
         quote = quote1;
         if (quote == null) {
-            return new ChannelMessageImpl(client, id, author, buildComponent(object), timeStamp, null, (NonCategoryChannel) channel);
+            return new ChannelMessageImpl(client, id, author, buildComponent(object), timeStamp, null, new NonCategoryChannelImpl(client, get(object, "target_id").getAsString()));
         }
         final String quoteId = get(quote, "rong_id").getAsString();
         Message quoteObject;
@@ -150,7 +145,7 @@ public class MessageBuilder {
             }
         }
 
-        return new ChannelMessageImpl(client, id, author, buildComponent(object), timeStamp, quoteObject, (NonCategoryChannel) channel);
+        return new ChannelMessageImpl(client, id, author, buildComponent(object), timeStamp, quoteObject, new NonCategoryChannelImpl(client, get(object, "target_id").getAsString()));
     }
 
     public Message buildQuote(JsonObject object) {
