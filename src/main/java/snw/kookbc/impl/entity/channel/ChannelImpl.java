@@ -34,7 +34,6 @@ import snw.kookbc.interfaces.Updatable;
 import snw.kookbc.util.MapBuilder;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static snw.kookbc.util.GsonUtil.get;
 
@@ -44,9 +43,9 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
 
     /* basic info */
     private String masterId;
-    private final AtomicReference<User> master = new AtomicReference<>();
+    private User master;
     private String guildId;
-    private final AtomicReference<Guild> guild = new AtomicReference<>();
+    private Guild guild;
     private Collection<RolePermissionOverwrite> rpo;
     private Collection<UserPermissionOverwrite> upo;
     private boolean permSync;
@@ -54,14 +53,27 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     private int level;
 
     /* completed flag */
-    private boolean completed;
+    protected boolean completed;
+
+    /* because ChannelImpl is an abstract class, so we need this property */
+    protected Channel channel;
 
     public ChannelImpl(KBCClient client, String id) {
         this.client = client;
         this.id = id;
     }
 
-    public ChannelImpl(KBCClient client, String id, String masterId, String guildId, boolean permSync, String name, Collection<RolePermissionOverwrite> rpo, Collection<UserPermissionOverwrite> upo, int level) {
+    public ChannelImpl(
+            KBCClient client,
+            String id,
+            String masterId,
+            String guildId,
+            boolean permSync,
+            String name,
+            Collection<RolePermissionOverwrite> rpo,
+            Collection<UserPermissionOverwrite> upo,
+            int level
+    ) {
         this.client = client;
         this.id = id;
         this.masterId = masterId;
@@ -83,12 +95,10 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public Guild getGuild() {
         if (!completed) init();
-        return this.guild.updateAndGet(obj -> {
-            if (obj == null || !guildId.equals(obj.getId())) {
-                return client.getStorage().getGuild(guildId);
-            }
-            return obj;
-        });
+        if (guild == null || !guildId.equals(guild.getId())) {
+            guild = client.getStorage().getGuild(guildId);
+        }
+        return guild;
     }
 
     @Override
@@ -118,7 +128,10 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public void setLevel(int level) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("level", level).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("channel_id", getId())
+                .put("level", level)
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_UPDATE.toFullURL(), body);
         this.level = level;
     }
@@ -132,14 +145,26 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public void updatePermission(int role, int rawAllow, int rawDeny) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("type", "role_id").put("value", String.valueOf(role)).put("allow", rawAllow).put("deny", rawDeny).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("channel_id", getId())
+                .put("type", "role_id")
+                .put("value", String.valueOf(role))
+                .put("allow", rawAllow)
+                .put("deny", rawDeny)
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_ROLE_UPDATE.toFullURL(), body);
     }
 
     @Override
     public void updatePermission(User user, int rawAllow, int rawDeny) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("type", "user_id").put("value", user.getId()).put("allow", rawAllow).put("deny", rawDeny).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("channel_id", getId())
+                .put("type", "user_id")
+                .put("value", user.getId())
+                .put("allow", rawAllow)
+                .put("deny", rawDeny)
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_ROLE_UPDATE.toFullURL(), body);
     }
 
@@ -260,14 +285,22 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public void deletePermission(Role role) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("type", "role_id").put("value", String.valueOf(role.getId())).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("channel_id", getId())
+                .put("type", "role_id")
+                .put("value", String.valueOf(role.getId()))
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_ROLE_DELETE.toFullURL(), body);
     }
 
     @Override
     public void deletePermission(User user) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("type", "user_id").put("value", String.valueOf(user.getId())).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("channel_id", getId())
+                .put("type", "user_id")
+                .put("value", String.valueOf(user.getId()))
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_ROLE_DELETE.toFullURL(), body);
     }
 
@@ -280,7 +313,10 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public void setName(String name) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("channel_id", getId()).put("name", name).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("channel_id", getId())
+                .put("name", name)
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.CHANNEL_UPDATE.toFullURL(), body);
         setName0(name);
     }
@@ -320,12 +356,10 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public User getMaster() {
         if (!completed) init();
-        return master.updateAndGet(obj -> {
-            if (obj == null || !masterId.equals(obj.getId())) {
-                return client.getStorage().getUser(masterId);
-            }
-            return obj;
-        });
+        if (master == null || !masterId.equals(master.getId())) {
+            master = client.getStorage().getUser(masterId);
+        }
+        return master;
     }
 
     @Override
@@ -340,7 +374,11 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
             Collection<RolePermissionOverwrite> rpo = new ArrayList<>();
             for (JsonElement element : get(data, "permission_overwrites").getAsJsonArray()) {
                 JsonObject orpo = element.getAsJsonObject();
-                rpo.add(new RolePermissionOverwrite(orpo.get("role_id").getAsInt(), orpo.get("allow").getAsInt(), orpo.get("deny").getAsInt()));
+                rpo.add(new RolePermissionOverwrite(
+                        orpo.get("role_id").getAsInt(),
+                        orpo.get("allow").getAsInt(),
+                        orpo.get("deny").getAsInt()
+                ));
             }
 
             // upo parse
@@ -348,7 +386,11 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
             for (JsonElement element : get(data, "permission_users").getAsJsonArray()) {
                 JsonObject oupo = element.getAsJsonObject();
                 JsonObject rawUser = oupo.getAsJsonObject("user");
-                upo.add(new UserPermissionOverwrite(client.getStorage().getUser(rawUser.get("id").getAsString(), rawUser), oupo.get("allow").getAsInt(), oupo.get("deny").getAsInt()));
+                upo.add(new UserPermissionOverwrite(
+                        client.getStorage().getUser(rawUser.get("id").getAsString(), rawUser),
+                        oupo.get("allow").getAsInt(),
+                        oupo.get("deny").getAsInt()
+                ));
             }
 
             this.name = name;
@@ -365,13 +407,14 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
                         String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id)
                 )
         );
-        masterId = channel.masterId;
-        guildId = channel.guildId;
-        rpo = channel.rpo;
-        upo = channel.upo;
-        permSync = channel.permSync;
-        name = channel.name;
-        level = channel.level;
-        completed = true;
+        this.masterId = channel.masterId;
+        this.guildId = channel.guildId;
+        this.rpo = channel.rpo;
+        this.upo = channel.upo;
+        this.permSync = channel.permSync;
+        this.name = channel.name;
+        this.level = channel.level;
+        this.completed = true;
+        this.channel = channel;
     }
 }

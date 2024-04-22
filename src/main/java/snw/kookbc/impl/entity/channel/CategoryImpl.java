@@ -33,6 +33,10 @@ import static snw.kookbc.util.GsonUtil.get;
 
 public class CategoryImpl extends ChannelImpl implements Category {
 
+    public CategoryImpl(KBCClient client, String id) {
+        super(client, id);
+    }
+
     public CategoryImpl(
             KBCClient client,
             String id,
@@ -49,6 +53,7 @@ public class CategoryImpl extends ChannelImpl implements Category {
 
     @Override
     public Collection<Channel> getChannels() {
+        if (completed) init();
         final JsonObject object = client.getNetworkClient()
                 .get(HttpAPIRoute.CHANNEL_INFO.toFullURL() + "?target_id=" + getId() + "&need_children=true");
         update(object);

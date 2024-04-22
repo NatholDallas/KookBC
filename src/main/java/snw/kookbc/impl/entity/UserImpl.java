@@ -65,7 +65,16 @@ public class UserImpl implements User, Updatable, Lazy {
         this.id = id;
     }
 
-    public UserImpl(KBCClient client, String id, boolean bot, String name, int identify, boolean ban, boolean vip, String avatarUrl, String vipAvatarUrl) {
+    public UserImpl(
+            KBCClient client,
+            String id, boolean bot,
+            String name,
+            int identify,
+            boolean ban,
+            boolean vip,
+            String avatarUrl,
+            String vipAvatarUrl
+    ) {
         this.client = client;
         this.id = id;
         this.bot = bot;

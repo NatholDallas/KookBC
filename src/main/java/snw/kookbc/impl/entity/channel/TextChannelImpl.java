@@ -56,7 +56,9 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
             String name,
             Collection<RolePermissionOverwrite> rpo,
             Collection<UserPermissionOverwrite> upo,
-            int level, int chatLimitTime, String topic
+            int level,
+            int chatLimitTime,
+            String topic
     ) {
         super(client, id, masterId, guildId, permSync, parent, name, rpo, upo, level);
         this.chatLimitTime = chatLimitTime;
@@ -65,11 +67,13 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
 
     @Override
     public String getTopic() {
+        if (completed) init();
         return topic;
     }
 
     @Override
     public void setTopic(String topic) {
+        if (completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("channel_id", getId())
                 .put("topic", topic)
@@ -79,32 +83,38 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
     }
 
     public void setTopic0(String topic) {
+        if (completed) init();
         this.topic = topic;
     }
 
     @Override
     public PageIterator<Collection<TextChannelMessage>> getMessages(@Nullable String refer, boolean isPin, String queryMode) {
+        if (completed) init();
         Validate.isTrue(Objects.equals(queryMode, "before") || Objects.equals(queryMode, "around") || Objects.equals(queryMode, "after"), "Invalid queryMode");
         return new TextChannelMessageIterator(client, this, refer, isPin, queryMode);
     }
 
     @Override
     public String sendComponent(String message) {
+        if (completed) init();
         return sendComponent(new MarkdownComponent(message));
     }
 
     @Override
     public String sendComponent(String message, @Nullable TextChannelMessage quote, @Nullable User tempTarget) {
+        if (completed) init();
         return sendComponent(new MarkdownComponent(message), quote, tempTarget);
     }
 
     @Override
     public String sendComponent(BaseComponent baseComponent) {
+        if (completed) init();
         return sendComponent(baseComponent, null, null);
     }
 
     @Override
     public String sendComponent(BaseComponent component, @Nullable TextChannelMessage quote, @Nullable User tempTarget) {
+        if (completed) init();
         Object[] result = MessageBuilder.serialize(component);
         Map<String, Object> body = new MapBuilder()
                 .put("target_id", getId())
@@ -128,11 +138,13 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
 
     @Override
     public int getChatLimitTime() {
+        if (completed) init();
         return chatLimitTime;
     }
 
     @Override
     public void setChatLimitTime(int chatLimitTime) {
+        if (completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("channel_id", getId())
                 .put("slow_mode", chatLimitTime)
@@ -142,11 +154,13 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
     }
 
     public void setChatLimitTime0(int chatLimitTime) {
+        if (completed) init();
         this.chatLimitTime = chatLimitTime;
     }
 
     @Override
     public void update(JsonObject data) {
+        if (completed) init();
         synchronized (this) {
             super.update(data);
             int chatLimitTime = get(data, "slow_mode").getAsInt();
@@ -155,5 +169,13 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
             this.chatLimitTime = chatLimitTime;
             this.topic = topic;
         }
+    }
+
+    @Override
+    public void init() {
+        super.init();
+        final TextChannelImpl textChannel = (TextChannelImpl) super.channel;
+        this.chatLimitTime = textChannel.chatLimitTime;
+        this.topic = textChannel.topic;
     }
 }

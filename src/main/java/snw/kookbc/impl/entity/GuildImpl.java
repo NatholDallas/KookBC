@@ -47,7 +47,6 @@ import snw.kookbc.util.MapBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static snw.kookbc.util.GsonUtil.get;
 
@@ -60,7 +59,7 @@ public class GuildImpl implements Guild, Updatable, Lazy {
     private boolean public_; // I know Guild owner can turn this to false, but I don't have internal events to listen for that!
     private String region;
     private String masterId;
-    private final AtomicReference<User> master = new AtomicReference<>();
+    private User master;
     private NotifyType notifyType;
     private String avatarUrl; // no vipAvatar here!
 
@@ -185,28 +184,44 @@ public class GuildImpl implements Guild, Updatable, Lazy {
     @Override
     public void ban(User user, @Nullable String s, int i) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("guild_id", getId()).put("target_id", user.getId()).put("del_msg_days", i).putIfNotNull("remarks", s).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("guild_id", getId())
+                .put("target_id", user.getId())
+                .put("del_msg_days", i)
+                .putIfNotNull("remarks", s)
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.BLACKLIST_CREATE.toFullURL(), body);
     }
 
     @Override
     public void unban(User user) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("guild_id", getId()).put("target_id", user.getId()).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("guild_id", getId())
+                .put("target_id", user.getId())
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.BLACKLIST_DELETE.toFullURL(), body);
     }
 
     @Override
     public void kick(User user) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("guild_id", getId()).put("target_id", user.getId()).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("guild_id", getId())
+                .put("target_id", user.getId())
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.GUILD_KICK.toFullURL(), body);
     }
 
     @Override
     public TextChannel createTextChannel(String s, @Nullable Category category) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("guild_id", getId()).put("name", s).put("type", 1).putIfNotNull("parent_id", category, Channel::getId).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("guild_id", getId())
+                .put("name", s)
+                .put("type", 1)
+                .putIfNotNull("parent_id", category, Channel::getId)
+                .build();
         TextChannel channel = (TextChannel) client.getEntityBuilder().buildChannel(client.getNetworkClient().post(HttpAPIRoute.CHANNEL_CREATE.toFullURL(), body));
         client.getStorage().addChannel(channel);
         return channel;
@@ -215,7 +230,14 @@ public class GuildImpl implements Guild, Updatable, Lazy {
     @Override
     public VoiceChannel createVoiceChannel(String s, @Nullable Category parent, @Range(from = 1L, to = 99L) int size, @Range(from = 1L, to = 3L) int quality) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("guild_id", getId()).put("name", s).put("type", 2).put("limit_amount", size).put("voice_quality", String.valueOf(quality)).putIfNotNull("parent_id", parent, Channel::getId).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("guild_id", getId())
+                .put("name", s)
+                .put("type", 2)
+                .put("limit_amount", size)
+                .put("voice_quality", String.valueOf(quality))
+                .putIfNotNull("parent_id", parent, Channel::getId)
+                .build();
         VoiceChannel channel = (VoiceChannel) client.getEntityBuilder().buildChannel(client.getNetworkClient().post(HttpAPIRoute.CHANNEL_CREATE.toFullURL(), body));
         client.getStorage().addChannel(channel);
         return channel;
@@ -224,7 +246,11 @@ public class GuildImpl implements Guild, Updatable, Lazy {
     @Override
     public Category createCategory(String s) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("guild_id", getId()).put("name", s).put("is_category", 1).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("guild_id", getId())
+                .put("name", s)
+                .put("is_category", 1)
+                .build();
         Category result = (Category) client.getEntityBuilder().buildChannel(client.getNetworkClient().post(HttpAPIRoute.GUILD_KICK.toFullURL(), body));
         client.getStorage().addChannel(result);
         return result;
@@ -233,7 +259,10 @@ public class GuildImpl implements Guild, Updatable, Lazy {
     @Override
     public Role createRole(String s) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("guild_id", getId()).put("name", s).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("guild_id", getId())
+                .put("name", s)
+                .build();
         JsonObject res = client.getNetworkClient().post(HttpAPIRoute.ROLE_CREATE.toFullURL(), body);
         Role result = client.getEntityBuilder().buildRole(this, res);
         client.getStorage().addRole(this, result);
@@ -293,7 +322,11 @@ public class GuildImpl implements Guild, Updatable, Lazy {
         Collection<BoostInfo> result = new HashSet<>();
         for (JsonElement item : object.getAsJsonArray("items")) {
             JsonObject data = item.getAsJsonObject();
-            result.add(new BoostInfoImpl(client.getStorage().getUser(data.get("user_id").getAsString()), data.get("start_time").getAsInt(), data.get("end_time").getAsInt()));
+            result.add(new BoostInfoImpl(
+                    client.getStorage().getUser(data.get("user_id").getAsString()),
+                    data.get("start_time").getAsInt(),
+                    data.get("end_time").getAsInt()
+            ));
         }
         return Collections.unmodifiableCollection(result);
     }
@@ -307,7 +340,11 @@ public class GuildImpl implements Guild, Updatable, Lazy {
     @Override
     public String createInvite(int validSeconds, int validTimes) {
         if (!completed) init();
-        Map<String, Object> body = new MapBuilder().put("guild_id", getId()).put("duration", validSeconds).put("setting_times", validTimes).build();
+        Map<String, Object> body = new MapBuilder()
+                .put("guild_id", getId())
+                .put("duration", validSeconds)
+                .put("setting_times", validTimes)
+                .build();
         JsonObject object = client.getNetworkClient().post(HttpAPIRoute.INVITE_CREATE.toFullURL(), body);
         return get(object, "url").getAsString();
     }
@@ -315,12 +352,10 @@ public class GuildImpl implements Guild, Updatable, Lazy {
     @Override
     public User getMaster() {
         if (!completed) init();
-        return master.updateAndGet(obj -> {
-            if (obj == null || !masterId.equals(obj.getId())) {
-                return client.getStorage().getUser(masterId);
-            }
-            return obj;
-        });
+        if (master == null || !masterId.equals(master.getId())) {
+            master = client.getStorage().getUser(masterId);
+        }
+        return master;
     }
 
     @Override
