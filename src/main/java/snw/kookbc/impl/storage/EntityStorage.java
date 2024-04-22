@@ -32,7 +32,6 @@ import snw.kookbc.impl.entity.GuildImpl;
 import snw.kookbc.impl.entity.RoleImpl;
 import snw.kookbc.impl.entity.UserImpl;
 import snw.kookbc.impl.entity.channel.ChannelImpl;
-import snw.kookbc.impl.network.HttpAPIRoute;
 
 import java.util.concurrent.TimeUnit;
 
@@ -44,7 +43,7 @@ public class EntityStorage {
     // See the notes of these member variables in the constructor.
     private final LoadingCache<String, User> users;
     private final LoadingCache<String, Guild> guilds;
-    private final Cache<String, Channel> channels;
+    private final LoadingCache<String, Channel> channels;
 
     // The following data types can be loaded manually, but it costs too many network resource.
     // So we won't remove them if the memory is enough.
@@ -54,25 +53,16 @@ public class EntityStorage {
     private final Cache<String, Reaction> reactions;
     private final Cache<Integer, Game> games;
 
-    private final UncheckedFunction<String, Channel> channelLoader;
-
     public EntityStorage(KBCClient client) {
         this.client = client;
         this.users = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new UserImpl(client, id)));
         this.guilds = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new GuildImpl(client, id)));
-        this.channels = newCaffeineBuilderWithWeakRef().build(); // key: channel ID
+        this.channels = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new ChannelImpl(client, id))); // key: channel ID
         this.msgs = newCaffeineBuilderWithSoftRef().build(); // key: msg id
         this.roles = newCaffeineBuilderWithSoftRef().build(); // key format: GUILD_ID#ROLE_ID
         this.emojis = newCaffeineBuilderWithSoftRef().build(); // key: emoji ID
         this.reactions = newCaffeineBuilderWithSoftRef().build(); // key format: MSG_ID#EMOJI_ID#SENDER_ID
         this.games = newCaffeineBuilderWithSoftRef().build(); // key: game id
-        this.channelLoader = funcWithRetry(id ->
-                client.getEntityBuilder().buildChannel(
-                        client.getNetworkClient().get(
-                                String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id)
-                        )
-                )
-        );
     }
 
     public Game getGame(int id) {
@@ -92,20 +82,7 @@ public class EntityStorage {
     }
 
     public Channel getChannel(String id) {
-        Channel result = channels.getIfPresent(id);
-        if (result == null) {
-            try {
-                result = channelLoader.apply(id);
-            } catch (Exception e) {
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new RuntimeException(e);
-                }
-            }
-            addChannel(result);
-        }
-        return result;
+        return channels.get(id);
     }
 
     public Role getRole(Guild guild, int id) {
