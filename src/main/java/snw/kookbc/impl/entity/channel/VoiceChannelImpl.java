@@ -65,7 +65,7 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
 
     @Override
     public String createInvite(int validSeconds, int validTimes) {
-        if (completed) init();
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("channel_id", getId())
                 .put("duration", validSeconds)
@@ -77,24 +77,24 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
 
     @Override
     public boolean hasPassword() {
-        if (completed) init();
+        if (!completed) init();
         return passwordProtected;
     }
 
     @Override
     public int getMaxSize() {
-        if (completed) init();
+        if (!completed) init();
         return maxSize;
     }
 
     public void setMaxSize(int maxSize) {
-        if (completed) init();
+        if (!completed) init();
         this.maxSize = maxSize;
     }
 
     @Override
     public Collection<User> getUsers() {
-        if (completed) init();
+        if (!completed) init();
         String rawContent = client.getNetworkClient().getRawContent(HttpAPIRoute.CHANNEL_USER_LIST.toFullURL() + "?channel_id=" + getId());
         JsonArray array = JsonParser.parseString(rawContent).getAsJsonObject().getAsJsonArray("data");
         Set<User> users = new HashSet<>();
@@ -107,7 +107,7 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
 
     @Override
     public void moveToHere(Collection<User> users) {
-        if (completed) init();
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("target_id", getId())
                 .put("user_ids", users.stream().map(User::getId).toArray(String[]::new))
@@ -116,13 +116,13 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     }
 
     public void setPasswordProtected(boolean passwordProtected) {
-        if (completed) init();
+        if (!completed) init();
         this.passwordProtected = passwordProtected;
     }
 
     @Override
     public void update(JsonObject data) {
-        if (completed) init();
+        if (!completed) init();
         synchronized (this) {
             super.update(data);
             boolean hasPassword = has(data, "has_password") && get(data, "has_password").getAsBoolean();
@@ -135,7 +135,7 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
 
     @Override
     public int getQuality() { // must query because we can't update this value by update(JsonObject) method
-        if (completed) init();
+        if (!completed) init();
         final JsonObject self = client.getNetworkClient()
                 .get(HttpAPIRoute.CHANNEL_INFO.toFullURL() + "?target_id=" + getId());
         return get(self, "voice_quality").getAsInt();
@@ -143,7 +143,7 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
 
     @Override
     public void setQuality(int i) {
-        if (completed) init();
+        if (!completed) init();
         final Map<String, Object> body = new MapBuilder()
                 .put("channel_id", getId())
                 .put("voice_quality", i)

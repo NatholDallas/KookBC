@@ -66,7 +66,7 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
 
     @Override
     public String createInvite(int validSeconds, int validTimes) {
-        if (completed) init();
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("channel_id", getId())
                 .put("duration", validSeconds)
@@ -79,13 +79,13 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
 
     @Override
     public @Nullable Category getParent() {
-        if (completed) init();
+        if (!completed) init();
         return parent;
     }
 
     @Override
     public void setParent(Category parent) {
-        if (completed) init();
+        if (!completed) init();
         Map<String, Object> body = new MapBuilder()
                 .put("channel_id", getId())
                 .put("parent_id", (parent == null) ? 0 : parent.getId())
@@ -95,13 +95,13 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
     }
 
     public void setParent0(Category parent) {
-        if (completed) init();
+        if (!completed) init();
         this.parent = parent;
     }
 
     @Override
     public PageIterator<Set<Invitation>> getInvitations() {
-        if (completed) init();
+        if (!completed) init();
         return new ChannelInvitationIterator(client, this);
     }
 
@@ -165,7 +165,7 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
 
     @Override
     public synchronized void update(JsonObject data) {
-        if (completed) init();
+        if (!completed) init();
         super.update(data);
         String parentId = get(data, "parent_id").getAsString();
         Category parent = ("".equals(parentId) || "0".equals(parentId)) ? null : (Category) client.getStorage().getChannel(parentId);

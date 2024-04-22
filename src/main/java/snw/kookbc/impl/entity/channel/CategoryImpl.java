@@ -53,7 +53,7 @@ public class CategoryImpl extends ChannelImpl implements Category {
 
     @Override
     public Collection<Channel> getChannels() {
-        if (completed) init();
+        if (!completed) init();
         final JsonObject object = client.getNetworkClient()
                 .get(HttpAPIRoute.CHANNEL_INFO.toFullURL() + "?target_id=" + getId() + "&need_children=true");
         update(object);
