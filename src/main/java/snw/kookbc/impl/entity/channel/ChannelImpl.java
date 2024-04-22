@@ -56,7 +56,7 @@ public class ChannelImpl implements Channel, Updatable, Lazy {
     protected boolean completed;
 
     /* because ChannelImpl is an abstract class, so we need this property */
-    protected JsonObject jsonObject;
+    protected ChannelImpl channel;
 
     public ChannelImpl(KBCClient client, String id) {
         this.client = client;
@@ -402,16 +402,16 @@ public class ChannelImpl implements Channel, Updatable, Lazy {
 
     @Override
     public void init() {
-        final JsonObject jsonObject = client.getNetworkClient().get(String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id));
-        final ChannelImpl channel = client.getEntityBuilder().buildChannel(jsonObject);
-        this.masterId = channel.masterId;
-        this.guildId = channel.guildId;
-        this.rpo = channel.rpo;
-        this.upo = channel.upo;
-        this.permSync = channel.permSync;
-        this.name = channel.name;
-        this.level = channel.level;
-        this.jsonObject = jsonObject;
+        this.channel = client.getEntityBuilder().buildChannel(
+                client.getNetworkClient().get(String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id))
+        );
+        this.masterId = this.channel.masterId;
+        this.guildId = this.channel.guildId;
+        this.rpo = this.channel.rpo;
+        this.upo = this.channel.upo;
+        this.permSync = this.channel.permSync;
+        this.name = this.channel.name;
+        this.level = this.channel.level;
         this.completed = true;
     }
 }
