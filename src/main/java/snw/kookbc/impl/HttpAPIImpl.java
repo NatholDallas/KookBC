@@ -39,6 +39,7 @@ import snw.jkook.message.TextChannelMessage;
 import snw.jkook.message.component.BaseComponent;
 import snw.jkook.util.PageIterator;
 import snw.jkook.util.Validate;
+import snw.kookbc.impl.entity.channel.CategoryImpl;
 import snw.kookbc.impl.message.ChannelMessageImpl;
 import snw.kookbc.impl.message.PrivateMessageImpl;
 import snw.kookbc.impl.message.TextChannelMessageImpl;
@@ -103,7 +104,7 @@ public class HttpAPIImpl implements HttpAPI {
     @Override
     public Category getCategory(String s) {
         try {
-            return (Category) client.getStorage().getChannel(s);
+            return new CategoryImpl(client, s);
         } catch (ClassCastException e) {
             throw new RuntimeException("The object that you requests is not a Category.", e);
         }

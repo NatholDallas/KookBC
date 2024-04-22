@@ -25,6 +25,7 @@ import snw.jkook.entity.channel.TextChannel;
 import snw.jkook.message.Message;
 import snw.jkook.plugin.Plugin;
 import snw.kookbc.impl.KBCClient;
+import snw.kookbc.impl.entity.channel.TextChannelImpl;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -427,7 +428,7 @@ public class CommandManagerImpl implements CommandManager {
         });
         registerArgumentParser(TextChannel.class, s -> {
             if (s.startsWith("(chn)") && s.endsWith("(chn)")) {
-                return (TextChannel) client.getStorage().getChannel(s.substring(5, s.length() - 5));
+                return new TextChannelImpl(client, s.substring(5, s.length() - 5));
             } else {
                 return null;
             }

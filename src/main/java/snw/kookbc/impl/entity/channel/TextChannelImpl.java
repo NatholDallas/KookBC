@@ -40,6 +40,10 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
     private int chatLimitTime;
     private String topic;
 
+    public TextChannelImpl(KBCClient client, String id) {
+        super(client, id);
+    }
+
     public TextChannelImpl(
             KBCClient client,
             String id,

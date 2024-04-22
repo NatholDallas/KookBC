@@ -40,6 +40,10 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     private int quality;
     private int chatLimitTime;
 
+    public VoiceChannelImpl(KBCClient client, String id) {
+        super(client, id);
+    }
+
     public VoiceChannelImpl(
             KBCClient client,
             String id,

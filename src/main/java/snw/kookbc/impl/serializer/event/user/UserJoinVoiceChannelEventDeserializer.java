@@ -21,9 +21,9 @@ package snw.kookbc.impl.serializer.event.user;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import snw.jkook.entity.channel.VoiceChannel;
 import snw.jkook.event.user.UserJoinVoiceChannelEvent;
 import snw.kookbc.impl.KBCClient;
+import snw.kookbc.impl.entity.channel.VoiceChannelImpl;
 import snw.kookbc.impl.serializer.event.NormalEventDeserializer;
 
 import java.lang.reflect.Type;
@@ -41,7 +41,7 @@ public class UserJoinVoiceChannelEventDeserializer extends NormalEventDeserializ
         return new UserJoinVoiceChannelEvent(
                 timeStamp,
                 client.getStorage().getUser(get(body, "user_id").getAsString()),
-                (VoiceChannel) client.getStorage().getChannel(get(body, "channel_id").getAsString())
+                new VoiceChannelImpl(client, get(body, "channel_id").getAsString())
         );
     }
 

@@ -46,6 +46,10 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
     private Category parent;
     private int chatLimitTime;
 
+    protected NonCategoryChannelImpl(KBCClient client, String id) {
+        super(client, id);
+    }
+
     protected NonCategoryChannelImpl(
             KBCClient client,
             String id,
