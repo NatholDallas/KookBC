@@ -416,5 +416,6 @@ public class ChannelImpl implements Channel, Updatable, Lazy {
         this.level = channel.level;
         this.completed = true;
         this.channel = channel;
+        channel.completed = true;
     }
 }
