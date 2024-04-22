@@ -407,6 +407,7 @@ public class ChannelImpl implements Channel, Updatable, Lazy {
                         String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id)
                 )
         );
+        channel.completed = true;
         this.masterId = channel.masterId;
         this.guildId = channel.guildId;
         this.rpo = channel.rpo;
@@ -416,6 +417,5 @@ public class ChannelImpl implements Channel, Updatable, Lazy {
         this.level = channel.level;
         this.completed = true;
         this.channel = channel;
-        channel.completed = true;
     }
 }
