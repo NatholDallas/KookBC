@@ -20,7 +20,6 @@ package snw.kookbc.impl.entity.channel;
 
 import com.google.gson.JsonObject;
 import org.jetbrains.annotations.Nullable;
-import snw.jkook.entity.User;
 import snw.jkook.entity.channel.Category;
 import snw.jkook.entity.channel.TextChannel;
 import snw.jkook.message.TextChannelMessage;
@@ -40,6 +39,10 @@ import static snw.kookbc.util.GsonUtil.get;
 public class TextChannelImpl extends NonCategoryChannelImpl implements TextChannel {
     private int chatLimitTime;
     private String topic;
+
+    public TextChannelImpl(KBCClient client, String id) {
+        super(client, id);
+    }
 
     public TextChannelImpl(
             KBCClient client,
@@ -96,7 +99,6 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
             super.update(data);
             int chatLimitTime = get(data, "slow_mode").getAsInt();
             String topic = get(data, "topic").getAsString();
-
             this.chatLimitTime = chatLimitTime;
             this.topic = topic;
         }
@@ -105,8 +107,8 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
     @Override
     public void init() {
         super.init();
-        final TextChannelImpl textChannel = (TextChannelImpl) super.channel;
-        this.chatLimitTime = textChannel.chatLimitTime;
-        this.topic = textChannel.topic;
+        final TextChannelImpl channel = (TextChannelImpl) super.channel;
+        this.chatLimitTime = channel.chatLimitTime;
+        this.topic = channel.topic;
     }
 }

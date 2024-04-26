@@ -46,6 +46,10 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
     private Category parent;
     private int chatLimitTime;
 
+    protected NonCategoryChannelImpl(KBCClient client, String id) {
+        super(client, id);
+    }
+
     protected NonCategoryChannelImpl(
             KBCClient client,
             String id,
@@ -55,7 +59,7 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
             Category parent,
             String name,
             Collection<RolePermissionOverwrite> rpo,
-            Collection<UserPermissionOverwrite> upo, 
+            Collection<UserPermissionOverwrite> upo,
             int level,
             int chatLimitTime
     ) {
@@ -177,5 +181,6 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
         super.init();
         final NonCategoryChannelImpl channel = (NonCategoryChannelImpl) super.channel;
         this.parent = channel.parent;
+        this.chatLimitTime = channel.chatLimitTime;
     }
 }

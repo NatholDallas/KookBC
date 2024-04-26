@@ -40,21 +40,25 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     private int quality;
     private int chatLimitTime;
 
+    public VoiceChannelImpl(KBCClient client, String id) {
+        super(client, id);
+    }
+
     public VoiceChannelImpl(
-            KBCClient client,
-            String id,
-            String masterId,
-            String guildId,
-            boolean permSync,
-            Category parent,
-            String name,
-            Collection<RolePermissionOverwrite> rpo,
-            Collection<UserPermissionOverwrite> upo,
-            int level,
-            boolean passwordProtected,
-            int maxSize,
-            int quality,
-            int chatLimitTime
+        KBCClient client,
+        String id,
+        String masterId,
+        String guildId,
+        boolean permSync,
+        Category parent,
+        String name,
+        Collection<RolePermissionOverwrite> rpo,
+        Collection<UserPermissionOverwrite> upo,
+        int level,
+        boolean passwordProtected,
+        int maxSize,
+        int quality,
+        int chatLimitTime
     ) {
         super(client, id, masterId, guildId, permSync, parent, name, rpo, upo, level, chatLimitTime);
         this.passwordProtected = passwordProtected;
@@ -67,10 +71,10 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     public String createInvite(int validSeconds, int validTimes) {
         if (completed) init();
         Map<String, Object> body = new MapBuilder()
-                .put("channel_id", getId())
-                .put("duration", validSeconds)
-                .put("setting_times", validTimes)
-                .build();
+            .put("channel_id", getId())
+            .put("duration", validSeconds)
+            .put("setting_times", validTimes)
+            .build();
         JsonObject object = client.getNetworkClient().post(HttpAPIRoute.INVITE_CREATE.toFullURL(), body);
         return get(object, "url").getAsString();
     }
@@ -109,28 +113,15 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     public void moveToHere(Collection<User> users) {
         if (completed) init();
         Map<String, Object> body = new MapBuilder()
-                .put("target_id", getId())
-                .put("user_ids", users.stream().map(User::getId).toArray(String[]::new))
-                .build();
+            .put("target_id", getId())
+            .put("user_ids", users.stream().map(User::getId).toArray(String[]::new))
+            .build();
         client.getNetworkClient().post(HttpAPIRoute.MOVE_USER.toFullURL(), body);
     }
 
     public void setPasswordProtected(boolean passwordProtected) {
         if (completed) init();
         this.passwordProtected = passwordProtected;
-    }
-
-    @Override
-    public void update(JsonObject data) {
-        if (completed) init();
-        synchronized (this) {
-            super.update(data);
-            boolean hasPassword = has(data, "has_password") && get(data, "has_password").getAsBoolean();
-            int size = has(data, "limit_amount") ? get(data, "limit_amount").getAsInt() : 0;
-            // KOOK does not provide voice quality value here!
-            this.passwordProtected = hasPassword;
-            this.maxSize = size;
-        }
     }
 
     @Override
@@ -152,11 +143,26 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     }
 
     @Override
+    public void update(JsonObject data) {
+        if (completed) init();
+        synchronized (this) {
+            super.update(data);
+            boolean hasPassword = has(data, "has_password") && get(data, "has_password").getAsBoolean();
+            int size = has(data, "limit_amount") ? get(data, "limit_amount").getAsInt() : 0;
+            int chatLimitTime = get(data, "slow_mode").getAsInt();
+            this.passwordProtected = hasPassword;
+            this.maxSize = size;
+            this.chatLimitTime = chatLimitTime;
+        }
+    }
+
+    @Override
     public void init() {
         super.init();
-        final VoiceChannelImpl voiceChannel = (VoiceChannelImpl) super.channel;
-        this.passwordProtected = voiceChannel.passwordProtected;
-        this.maxSize = voiceChannel.maxSize;
-        this.quality = voiceChannel.quality;
+        final VoiceChannelImpl channel = (VoiceChannelImpl) super.channel;
+        this.passwordProtected = channel.passwordProtected;
+        this.maxSize = channel.maxSize;
+        this.quality = channel.quality;
+        this.chatLimitTime = channel.chatLimitTime;
     }
 }

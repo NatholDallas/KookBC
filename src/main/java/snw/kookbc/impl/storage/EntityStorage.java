@@ -25,7 +25,6 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.gson.JsonObject;
 import snw.jkook.entity.*;
 import snw.jkook.entity.channel.Channel;
-import snw.jkook.entity.channel.TextChannel;
 import snw.jkook.message.Message;
 import snw.kookbc.impl.KBCClient;
 import snw.kookbc.impl.entity.CustomEmojiImpl;
@@ -33,6 +32,7 @@ import snw.kookbc.impl.entity.GuildImpl;
 import snw.kookbc.impl.entity.RoleImpl;
 import snw.kookbc.impl.entity.UserImpl;
 import snw.kookbc.impl.entity.channel.ChannelImpl;
+import snw.kookbc.impl.network.HttpAPIRoute;
 
 import java.util.concurrent.TimeUnit;
 
@@ -58,7 +58,9 @@ public class EntityStorage {
         this.client = client;
         this.users = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new UserImpl(client, id)));
         this.guilds = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new GuildImpl(client, id)));
-        this.channels = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new ChannelImpl(client, id))); // key: channel ID
+        this.channels = newCaffeineBuilderWithWeakRef().build(withRetry(id -> client.getEntityBuilder().buildChannel(
+                client.getNetworkClient().get(String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id))
+        ))); // key: channel ID
         this.msgs = newCaffeineBuilderWithSoftRef().build(); // key: msg id
         this.roles = newCaffeineBuilderWithSoftRef().build(); // key format: GUILD_ID#ROLE_ID
         this.emojis = newCaffeineBuilderWithSoftRef().build(); // key: emoji ID
