@@ -45,22 +45,22 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     }
 
     public VoiceChannelImpl(
-        KBCClient client,
-        String id,
-        String masterId,
-        String guildId,
-        boolean permSync,
-        Category parent,
-        String name,
-        Collection<RolePermissionOverwrite> rpo,
-        Collection<UserPermissionOverwrite> upo,
-        int level,
-        boolean passwordProtected,
-        int maxSize,
-        int quality,
-        int chatLimitTime
+            KBCClient client,
+            String id,
+            String masterId,
+            String guildId,
+            boolean permSync,
+            String name,
+            Collection<RolePermissionOverwrite> rpo,
+            Collection<UserPermissionOverwrite> upo,
+            int level,
+            Category parent,
+            int chatLimitTime,
+            boolean passwordProtected,
+            int maxSize,
+            int quality
     ) {
-        super(client, id, masterId, guildId, permSync, parent, name, rpo, upo, level, chatLimitTime);
+        super(client, id, masterId, guildId, permSync, name, rpo, upo, level, parent, chatLimitTime);
         this.passwordProtected = passwordProtected;
         this.maxSize = maxSize;
         this.quality = quality;
@@ -71,10 +71,10 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     public String createInvite(int validSeconds, int validTimes) {
         if (completed) init();
         Map<String, Object> body = new MapBuilder()
-            .put("channel_id", getId())
-            .put("duration", validSeconds)
-            .put("setting_times", validTimes)
-            .build();
+                .put("channel_id", getId())
+                .put("duration", validSeconds)
+                .put("setting_times", validTimes)
+                .build();
         JsonObject object = client.getNetworkClient().post(HttpAPIRoute.INVITE_CREATE.toFullURL(), body);
         return get(object, "url").getAsString();
     }
@@ -113,9 +113,9 @@ public class VoiceChannelImpl extends NonCategoryChannelImpl implements VoiceCha
     public void moveToHere(Collection<User> users) {
         if (completed) init();
         Map<String, Object> body = new MapBuilder()
-            .put("target_id", getId())
-            .put("user_ids", users.stream().map(User::getId).toArray(String[]::new))
-            .build();
+                .put("target_id", getId())
+                .put("user_ids", users.stream().map(User::getId).toArray(String[]::new))
+                .build();
         client.getNetworkClient().post(HttpAPIRoute.MOVE_USER.toFullURL(), body);
     }
 

@@ -24,14 +24,20 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.gson.JsonObject;
 import snw.jkook.entity.*;
+import snw.jkook.entity.channel.Category;
 import snw.jkook.entity.channel.Channel;
+import snw.jkook.entity.channel.TextChannel;
+import snw.jkook.entity.channel.VoiceChannel;
 import snw.jkook.message.Message;
 import snw.kookbc.impl.KBCClient;
 import snw.kookbc.impl.entity.CustomEmojiImpl;
 import snw.kookbc.impl.entity.GuildImpl;
 import snw.kookbc.impl.entity.RoleImpl;
 import snw.kookbc.impl.entity.UserImpl;
+import snw.kookbc.impl.entity.channel.CategoryImpl;
 import snw.kookbc.impl.entity.channel.ChannelImpl;
+import snw.kookbc.impl.entity.channel.TextChannelImpl;
+import snw.kookbc.impl.entity.channel.VoiceChannelImpl;
 import snw.kookbc.impl.network.HttpAPIRoute;
 
 import java.util.concurrent.TimeUnit;
@@ -45,6 +51,9 @@ public class EntityStorage {
     private final LoadingCache<String, User> users;
     private final LoadingCache<String, Guild> guilds;
     private final LoadingCache<String, Channel> channels;
+    private final LoadingCache<String, Category> categories;
+    private final LoadingCache<String, TextChannel> textChannels;
+    private final LoadingCache<String, VoiceChannel> voiceChannels;
 
     // The following data types can be loaded manually, but it costs too many network resource.
     // So we won't remove them if the memory is enough.
@@ -58,14 +67,17 @@ public class EntityStorage {
         this.client = client;
         this.users = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new UserImpl(client, id)));
         this.guilds = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new GuildImpl(client, id)));
-        this.channels = newCaffeineBuilderWithWeakRef().build(withRetry(id -> client.getEntityBuilder().buildChannel(
+        this.channels = newCaffeineBuilderWithSoftRef().build(withRetry(id -> client.getEntityBuilder().buildChannel(
                 client.getNetworkClient().get(String.format("%s?target_id=%s", HttpAPIRoute.CHANNEL_INFO.toFullURL(), id))
-        ))); // key: channel ID
-        this.msgs = newCaffeineBuilderWithSoftRef().build(); // key: msg id
-        this.roles = newCaffeineBuilderWithSoftRef().build(); // key format: GUILD_ID#ROLE_ID
-        this.emojis = newCaffeineBuilderWithSoftRef().build(); // key: emoji ID
-        this.reactions = newCaffeineBuilderWithSoftRef().build(); // key format: MSG_ID#EMOJI_ID#SENDER_ID
-        this.games = newCaffeineBuilderWithSoftRef().build(); // key: game id
+        )));
+        this.categories = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new CategoryImpl(client, id)));
+        this.textChannels = newCaffeineBuilderWithWeakRef().build(withRetry(id -> new TextChannelImpl(client, id)));
+        this.voiceChannels = newCaffeineBuilderWithSoftRef().build(withRetry(id -> new VoiceChannelImpl(client, id)));
+        this.msgs = newCaffeineBuilderWithSoftRef().build();
+        this.roles = newCaffeineBuilderWithSoftRef().build();
+        this.emojis = newCaffeineBuilderWithSoftRef().build();
+        this.reactions = newCaffeineBuilderWithSoftRef().build();
+        this.games = newCaffeineBuilderWithSoftRef().build();
     }
 
     public Game getGame(int id) {
@@ -86,6 +98,18 @@ public class EntityStorage {
 
     public Channel getChannel(String id) {
         return channels.get(id);
+    }
+
+    public Category getCategory(String id) {
+        return categories.get(id);
+    }
+
+    public TextChannel getTextChannel(String id) {
+        return textChannels.get(id);
+    }
+
+    public VoiceChannel getVoiceChannel(String id) {
+        return voiceChannels.get(id);
     }
 
     public Role getRole(Guild guild, int id) {

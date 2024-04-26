@@ -37,7 +37,7 @@ import java.util.*;
 
 import static snw.kookbc.util.GsonUtil.get;
 
-public class ChannelImpl implements Channel, Updatable, Lazy {
+public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     protected final KBCClient client;
     private final String id;
 
@@ -415,6 +415,5 @@ public class ChannelImpl implements Channel, Updatable, Lazy {
         this.name = channel.name;
         this.level = channel.level;
         this.completed = true;
-        this.channel = channel;
     }
 }

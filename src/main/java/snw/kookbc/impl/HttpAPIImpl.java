@@ -29,10 +29,7 @@ import snw.jkook.HttpAPI;
 import snw.jkook.entity.Game;
 import snw.jkook.entity.Guild;
 import snw.jkook.entity.User;
-import snw.jkook.entity.channel.Category;
-import snw.jkook.entity.channel.Channel;
-import snw.jkook.entity.channel.NonCategoryChannel;
-import snw.jkook.entity.channel.TextChannel;
+import snw.jkook.entity.channel.*;
 import snw.jkook.message.ChannelMessage;
 import snw.jkook.message.PrivateMessage;
 import snw.jkook.message.TextChannelMessage;
@@ -102,11 +99,17 @@ public class HttpAPIImpl implements HttpAPI {
 
     @Override
     public Category getCategory(String s) {
-        try {
-            return (Category) client.getStorage().getChannel(s);
-        } catch (ClassCastException e) {
-            throw new RuntimeException("The object that you requests is not a Category.", e);
-        }
+        return client.getStorage().getCategory(s);
+    }
+
+    @Override
+    public TextChannel getTextChannel(String s) {
+        return client.getStorage().getTextChannel(s);
+    }
+
+    @Override
+    public VoiceChannel getVoiceChannel(String s) {
+        return client.getStorage().getVoiceChannel(s);
     }
 
     @Override

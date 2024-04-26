@@ -50,15 +50,15 @@ public class TextChannelImpl extends NonCategoryChannelImpl implements TextChann
             String masterId,
             String guildId,
             boolean permSync,
-            Category parent,
             String name,
             Collection<RolePermissionOverwrite> rpo,
             Collection<UserPermissionOverwrite> upo,
             int level,
+            Category parent,
             int chatLimitTime,
             String topic
     ) {
-        super(client, id, masterId, guildId, permSync, parent, name, rpo, upo, level, chatLimitTime);
+        super(client, id, masterId, guildId, permSync, name, rpo, upo, level, parent, chatLimitTime);
         this.chatLimitTime = chatLimitTime;
         this.topic = topic;
     }

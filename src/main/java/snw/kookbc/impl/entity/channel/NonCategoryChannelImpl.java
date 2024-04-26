@@ -56,11 +56,11 @@ public abstract class NonCategoryChannelImpl extends ChannelImpl implements NonC
             String masterId,
             String guildId,
             boolean permSync,
-            Category parent,
             String name,
             Collection<RolePermissionOverwrite> rpo,
             Collection<UserPermissionOverwrite> upo,
             int level,
+            Category parent,
             int chatLimitTime
     ) {
         super(client, id, masterId, guildId, permSync, name, rpo, upo, level);

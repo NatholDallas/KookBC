@@ -23,11 +23,9 @@ import com.google.gson.JsonParser;
 import snw.jkook.entity.User;
 import snw.jkook.entity.channel.Channel;
 import snw.jkook.entity.channel.NonCategoryChannel;
-import snw.jkook.entity.channel.TextChannel;
 import snw.jkook.message.ChannelMessage;
 import snw.jkook.message.Message;
 import snw.jkook.message.PrivateMessage;
-import snw.jkook.message.TextChannelMessage;
 import snw.jkook.message.component.BaseComponent;
 import snw.jkook.message.component.FileComponent;
 import snw.jkook.message.component.MarkdownComponent;
@@ -41,7 +39,6 @@ import snw.kookbc.impl.KBCClient;
 import snw.kookbc.impl.message.ChannelMessageImpl;
 import snw.kookbc.impl.message.PrivateMessageImpl;
 import snw.kookbc.impl.message.QuoteImpl;
-import snw.kookbc.impl.message.TextChannelMessageImpl;
 
 import java.util.NoSuchElementException;
 

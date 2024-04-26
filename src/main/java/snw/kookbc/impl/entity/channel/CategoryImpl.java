@@ -43,10 +43,10 @@ public class CategoryImpl extends ChannelImpl implements Category {
             String masterId,
             String guildId,
             boolean permSync,
+            String name,
             Collection<RolePermissionOverwrite> rpo,
             Collection<UserPermissionOverwrite> upo,
-            int level,
-            String name
+            int level
     ) {
         super(client, id, masterId, guildId, permSync, name, rpo, upo, level);
     }

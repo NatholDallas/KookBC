@@ -190,10 +190,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.SNWCreations</groupId>
+            <groupId>com.github.natholdallas</groupId>
             <artifactId>JKook</artifactId>
-            <version>${jkook.version}</version>
+            <version>1.0.0</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.SNWCreations</groupId>-->
+<!--            <artifactId>JKook</artifactId>-->
+<!--            <version>${jkook.version}</version>-->
+<!--        </dependency>-->
 
         <!--
             We use a fork of TCA here, the library is made by Minecrell
