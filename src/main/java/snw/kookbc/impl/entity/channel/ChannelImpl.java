@@ -95,9 +95,7 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public Guild getGuild() {
         if (!completed) init();
-        if (guild == null || !guildId.equals(guild.getId())) {
-            guild = client.getStorage().getGuild(guildId);
-        }
+        if (guild == null) guild = client.getStorage().getGuild(guildId);
         return guild;
     }
 
@@ -356,9 +354,7 @@ public abstract class ChannelImpl implements Channel, Updatable, Lazy {
     @Override
     public User getMaster() {
         if (!completed) init();
-        if (master == null || !masterId.equals(master.getId())) {
-            master = client.getStorage().getUser(masterId);
-        }
+        if (master == null) master = client.getStorage().getUser(masterId);
         return master;
     }
 

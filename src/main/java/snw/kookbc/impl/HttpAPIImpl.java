@@ -33,12 +33,14 @@ import snw.jkook.entity.channel.*;
 import snw.jkook.message.ChannelMessage;
 import snw.jkook.message.PrivateMessage;
 import snw.jkook.message.TextChannelMessage;
+import snw.jkook.message.VoiceChannelMessage;
 import snw.jkook.message.component.BaseComponent;
 import snw.jkook.util.PageIterator;
 import snw.jkook.util.Validate;
 import snw.kookbc.impl.message.ChannelMessageImpl;
 import snw.kookbc.impl.message.PrivateMessageImpl;
 import snw.kookbc.impl.message.TextChannelMessageImpl;
+import snw.kookbc.impl.message.VoiceChannelMessageImpl;
 import snw.kookbc.impl.network.HttpAPIRoute;
 import snw.kookbc.impl.network.exceptions.BadResponseException;
 import snw.kookbc.impl.pageiter.GameIterator;
@@ -230,34 +232,6 @@ public class HttpAPIImpl implements HttpAPI {
     }
 
     @Override
-    public TextChannelMessage getTextChannelMessage(String id) throws NoSuchElementException {
-        final JsonObject object;
-        try {
-            object = client.getNetworkClient()
-                    .get(HttpAPIRoute.CHANNEL_MESSAGE_INFO.toFullURL() + "?msg_id=" + id);
-        } catch (BadResponseException e) {
-            if (e.getCode() == 40000) {
-                throw (NoSuchElementException) // force casting is required because Throwable#initCause return Throwable
-                        new NoSuchElementException("No message object with provided ID " + id + " found")
-                                .initCause(e);
-            }
-            throw e;
-        }
-        JsonObject rawSender = get(object, "author").getAsJsonObject();
-        User sender = client.getStorage().getUser(get(rawSender, "id").getAsString(), rawSender);
-        final BaseComponent component = client.getMessageBuilder().buildComponent(object);
-        long timeStamp = get(object, "create_at").getAsLong();
-        TextChannelMessage quote = null;
-        if (has(object, "quote")) {
-            final JsonObject rawQuote = get(object, "quote").getAsJsonObject();
-            final String quoteId = get(rawQuote, "id").getAsString();
-            quote = getTextChannelMessage(quoteId);
-        }
-        final TextChannel channel = (TextChannel) getChannel(get(object, "channel_id").getAsString());
-        return new TextChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
-    }
-
-    @Override
     public ChannelMessage getChannelMessage(String id) throws NoSuchElementException {
         final JsonObject object;
         try {
@@ -283,6 +257,62 @@ public class HttpAPIImpl implements HttpAPI {
         }
         final NonCategoryChannel channel = (NonCategoryChannel) getChannel(get(object, "channel_id").getAsString());
         return new ChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
+    }
+
+    @Override
+    public TextChannelMessage getTextChannelMessage(String id) throws NoSuchElementException {
+        final JsonObject object;
+        try {
+            object = client.getNetworkClient()
+                    .get(HttpAPIRoute.CHANNEL_MESSAGE_INFO.toFullURL() + "?msg_id=" + id);
+        } catch (BadResponseException e) {
+            if (e.getCode() == 40000) {
+                throw (NoSuchElementException) // force casting is required because Throwable#initCause return Throwable
+                        new NoSuchElementException("No message object with provided ID " + id + " found")
+                                .initCause(e);
+            }
+            throw e;
+        }
+        JsonObject rawSender = get(object, "author").getAsJsonObject();
+        User sender = client.getStorage().getUser(get(rawSender, "id").getAsString(), rawSender);
+        final BaseComponent component = client.getMessageBuilder().buildComponent(object);
+        long timeStamp = get(object, "create_at").getAsLong();
+        TextChannelMessage quote = null;
+        if (has(object, "quote")) {
+            final JsonObject rawQuote = get(object, "quote").getAsJsonObject();
+            final String quoteId = get(rawQuote, "id").getAsString();
+            quote = getTextChannelMessage(quoteId);
+        }
+        final TextChannel channel = getTextChannel(get(object, "channel_id").getAsString());
+        return new TextChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
+    }
+
+    @Override
+    public VoiceChannelMessage getVoiceChannelMessage(String id) throws NoSuchElementException {
+        final JsonObject object;
+        try {
+            object = client.getNetworkClient()
+                    .get(HttpAPIRoute.CHANNEL_MESSAGE_INFO.toFullURL() + "?msg_id=" + id);
+        } catch (BadResponseException e) {
+            if (e.getCode() == 40000) {
+                throw (NoSuchElementException) // force casting is required because Throwable#initCause return Throwable
+                        new NoSuchElementException("No message object with provided ID " + id + " found")
+                                .initCause(e);
+            }
+            throw e;
+        }
+        JsonObject rawSender = get(object, "author").getAsJsonObject();
+        User sender = client.getStorage().getUser(get(rawSender, "id").getAsString(), rawSender);
+        final BaseComponent component = client.getMessageBuilder().buildComponent(object);
+        long timeStamp = get(object, "create_at").getAsLong();
+        TextChannelMessage quote = null;
+        if (has(object, "quote")) {
+            final JsonObject rawQuote = get(object, "quote").getAsJsonObject();
+            final String quoteId = get(rawQuote, "id").getAsString();
+            quote = getTextChannelMessage(quoteId);
+        }
+        final VoiceChannel channel = getVoiceChannel(get(object, "channel_id").getAsString());
+        return new VoiceChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
     }
 
     @Override

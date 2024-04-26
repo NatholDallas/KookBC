@@ -352,9 +352,7 @@ public class GuildImpl implements Guild, Updatable, Lazy {
     @Override
     public User getMaster() {
         if (!completed) init();
-        if (master == null || !masterId.equals(master.getId())) {
-            master = client.getStorage().getUser(masterId);
-        }
+        if (master == null) master = client.getStorage().getUser(masterId);
         return master;
     }
 

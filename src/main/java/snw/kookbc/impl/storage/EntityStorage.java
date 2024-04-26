@@ -124,7 +124,7 @@ public class EntityStorage {
         // use getIfPresent, because the def should not be wasted
         User result = users.getIfPresent(id);
         if (result == null) {
-            result = new UserImpl(client, id);
+            result = client.getEntityBuilder().buildUser(def);
             addUser(result);
         } else {
             ((UserImpl) result).update(def);
