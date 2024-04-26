@@ -3,6 +3,8 @@ package snw.kookbc.impl.message;
 import snw.jkook.entity.CustomEmoji;
 import snw.jkook.entity.User;
 import snw.jkook.entity.channel.NonCategoryChannel;
+import snw.jkook.entity.channel.TextChannel;
+import snw.jkook.entity.channel.VoiceChannel;
 import snw.jkook.message.ChannelMessage;
 import snw.jkook.message.Message;
 import snw.jkook.message.component.BaseComponent;
@@ -55,6 +57,16 @@ public class ChannelMessageImpl extends MessageImpl implements ChannelMessage {
     @Override
     public NonCategoryChannel getChannel() {
         return channel;
+    }
+
+    @Override
+    public TextChannel getTextChannel() {
+        return (TextChannel) channel;
+    }
+
+    @Override
+    public VoiceChannel getVoiceChannel() {
+        return (VoiceChannel) channel;
     }
 
     @Override
