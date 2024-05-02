@@ -255,8 +255,8 @@ public class HttpAPIImpl implements HttpAPI {
             final String quoteId = get(rawQuote, "id").getAsString();
             quote = getChannelMessage(quoteId);
         }
-        final NonCategoryChannel channel = (NonCategoryChannel) getChannel(get(object, "channel_id").getAsString());
-        return new ChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
+        String channelId = get(object, "channel_id").getAsString();
+        return new ChannelMessageImpl(client, id, sender, component, timeStamp, quote, channelId);
     }
 
     @Override
@@ -283,8 +283,8 @@ public class HttpAPIImpl implements HttpAPI {
             final String quoteId = get(rawQuote, "id").getAsString();
             quote = getTextChannelMessage(quoteId);
         }
-        final TextChannel channel = getTextChannel(get(object, "channel_id").getAsString());
-        return new TextChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
+        final String channelId = get(object, "channel_id").getAsString();
+        return new TextChannelMessageImpl(client, id, sender, component, timeStamp, quote, channelId);
     }
 
     @Override
@@ -311,8 +311,8 @@ public class HttpAPIImpl implements HttpAPI {
             final String quoteId = get(rawQuote, "id").getAsString();
             quote = getTextChannelMessage(quoteId);
         }
-        final VoiceChannel channel = getVoiceChannel(get(object, "channel_id").getAsString());
-        return new VoiceChannelMessageImpl(client, id, sender, component, timeStamp, quote, channel);
+        final String channelId = get(object, "channel_id").getAsString();
+        return new VoiceChannelMessageImpl(client, id, sender, component, timeStamp, quote, channelId);
     }
 
     @Override

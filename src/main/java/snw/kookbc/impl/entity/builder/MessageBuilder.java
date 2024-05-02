@@ -21,8 +21,6 @@ package snw.kookbc.impl.entity.builder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import snw.jkook.entity.User;
-import snw.jkook.entity.channel.Channel;
-import snw.jkook.entity.channel.NonCategoryChannel;
 import snw.jkook.message.ChannelMessage;
 import snw.jkook.message.Message;
 import snw.jkook.message.PrivateMessage;
@@ -121,7 +119,7 @@ public class MessageBuilder {
         final JsonObject extra = get(object, "extra").getAsJsonObject();
         JsonObject authorObj = get(extra, "author").getAsJsonObject();
         User author = client.getStorage().getUser(get(authorObj, "id").getAsString(), authorObj);
-        Channel channel = client.getStorage().getChannel(get(object, "target_id").getAsString());
+        String channelId = get(object, "target_id").getAsString();
         long timeStamp = get(object, "msg_timestamp").getAsLong();
         final JsonObject quote;
         JsonObject quote1;
@@ -132,7 +130,7 @@ public class MessageBuilder {
         }
         quote = quote1;
         if (quote == null) {
-            return new ChannelMessageImpl(client, id, author, buildComponent(object), timeStamp, null, (NonCategoryChannel) channel);
+            return new ChannelMessageImpl(client, id, author, buildComponent(object), timeStamp, null, channelId);
         }
         final String quoteId = get(quote, "rong_id").getAsString();
         Message quoteObject;
@@ -147,7 +145,7 @@ public class MessageBuilder {
             }
         }
 
-        return new ChannelMessageImpl(client, id, author, buildComponent(object), timeStamp, quoteObject, (NonCategoryChannel) channel);
+        return new ChannelMessageImpl(client, id, author, buildComponent(object), timeStamp, quoteObject, channelId);
     }
 
     public Message buildQuote(JsonObject object) {

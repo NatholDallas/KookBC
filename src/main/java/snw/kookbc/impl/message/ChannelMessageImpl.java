@@ -3,8 +3,6 @@ package snw.kookbc.impl.message;
 import snw.jkook.entity.CustomEmoji;
 import snw.jkook.entity.User;
 import snw.jkook.entity.channel.NonCategoryChannel;
-import snw.jkook.entity.channel.TextChannel;
-import snw.jkook.entity.channel.VoiceChannel;
 import snw.jkook.message.ChannelMessage;
 import snw.jkook.message.Message;
 import snw.jkook.message.component.BaseComponent;
@@ -19,11 +17,20 @@ import java.util.Map;
 
 public class ChannelMessageImpl extends MessageImpl implements ChannelMessage {
 
-    private final NonCategoryChannel channel;
+    protected final String channelId;
+    protected NonCategoryChannel channel;
 
-    public ChannelMessageImpl(KBCClient client, String id, User user, BaseComponent component, long timeStamp, Message quote, NonCategoryChannel channel) {
+    public ChannelMessageImpl(
+            KBCClient client,
+            String id,
+            User user,
+            BaseComponent component,
+            long timeStamp,
+            Message quote,
+            String channelId
+    ) {
         super(client, id, user, component, timeStamp, quote);
-        this.channel = channel;
+        this.channelId = channelId;
     }
 
     @Override
@@ -56,17 +63,8 @@ public class ChannelMessageImpl extends MessageImpl implements ChannelMessage {
 
     @Override
     public NonCategoryChannel getChannel() {
+        if (channel == null) channel = (NonCategoryChannel) client.getStorage().getChannel(channelId);
         return channel;
-    }
-
-    @Override
-    public TextChannel getTextChannel() {
-        return (TextChannel) channel;
-    }
-
-    @Override
-    public VoiceChannel getVoiceChannel() {
-        return (VoiceChannel) channel;
     }
 
     @Override

@@ -8,15 +8,12 @@ import snw.jkook.message.component.BaseComponent;
 import snw.kookbc.impl.KBCClient;
 
 public class VoiceChannelMessageImpl extends ChannelMessageImpl implements VoiceChannelMessage {
-    private final VoiceChannel channel;
-
-    public VoiceChannelMessageImpl(KBCClient client, String id, User user, BaseComponent component, long timeStamp, Message quote, VoiceChannel channel) {
-        super(client, id, user, component, timeStamp, quote, channel);
-        this.channel = channel;
+    public VoiceChannelMessageImpl(KBCClient client, String id, User user, BaseComponent component, long timeStamp, Message quote, String channelId) {
+        super(client, id, user, component, timeStamp, quote, channelId);
     }
 
     @Override
     public VoiceChannel getChannel() {
-        return channel;
+        return (VoiceChannel) super.getChannel();
     }
 }
